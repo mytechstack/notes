@@ -1,0 +1,294 @@
+# OPA Database Integration Example
+
+This project demonstrates how to implement **Open Policy Agent (OPA) periodically querying a database** for policy updates using Go, Docker, and PostgreSQL.
+
+## Architecture
+
+```
+┌─────────────────┐    Polls every     ┌──────────────────┐    Queries    ┌──────────────┐
+│                 │    10-20 seconds   │                  │              │              │
+│       OPA       │◄───────────────────│  Bundle Server   │◄─────────────│  PostgreSQL  │
+│                 │                    │      (Go)        │              │   Database   │
+└─────────────────┘                    └──────────────────┘              └──────────────┘
+         │                                       │                               │
+         │                                       │                               │
+    Port 8181                               Port 8080                       Port 5432
+    (Policy API)                          (Bundle Endpoint)               (Policy Storage)
+```
+
+## Components
+
+### 1. **Bundle Server (Go)**
+- Serves OPA bundles from PostgreSQL database
+- Converts database policies to OPA bundle format (tar.gz)
+- Provides health checks and status endpoints
+- Built with Gorilla Mux and PostgreSQL driver
+
+### 2. **PostgreSQL Database**
+- Stores Rego policies with metadata
+- Supports versioning and audit trails
+- Includes triggers for automatic timestamping
+- Sample policies pre-loaded
+
+### 3. **OPA Server**
+- Configured to poll bundle server every 10-20 seconds
+- Automatically loads and compiles new policies
+- Provides policy decision API
+- Includes health monitoring
+
+### 4. **Policy Loader**
+- Python utility to load `.rego` files into database
+- Extracts metadata from policy comments
+- Supports bulk loading and updates
+
+## Quick Start
+
+### Prerequisites
+- Docker and Docker Compose
+- `make` (optional, for convenience commands)
+- `curl` and `jq` (for testing)
+
+### 1. Start the System
+```bash
+# Build and start all services
+make dev-up
+
+# Or manually:
+docker-compose up -d --build
+```
+
+### 2. Check Status
+```bash
+# Check all service health
+make status
+
+# Check individual components
+curl http://localhost:8080/health  # Bundle server
+curl http://localhost:8181/health  # OPA server
+```
+
+### 3. Run Sample Queries
+```bash
+# Test RBAC policy
+curl -X POST http://localhost:8181/v1/data/rbac/allow \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": {
+      "user": {"id": "user123", "roles": ["admin"]}, 
+      "required_role": "user"
+    }
+  }'
+
+# Test data access policy
+curl -X POST http://localhost:8181/v1/data/data/access/allow \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": {
+      "user": {"id": "user123", "roles": ["user"]},
+      "action": "read",
+      "resource": {"type": "user_data", "owner": "user123"}
+    }
+  }'
+```
+
+## File Structure
+
+```
+.
+├── main.go                    # Bundle server implementation
+├── go.mod                     # Go dependencies
+├── Dockerfile                 # Bundle server Docker image
+├── docker-compose.yml         # Complete system setup
+├── opa-config.yaml           # OPA configuration
+├── init-db.sql               # Database schema and sample data
+├── Makefile                  # Development commands
+├── policy-loader/            # Python policy loader
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── load_policies.py
+└── sample-policies/          # Sample Rego policies
+    ├── rbac.rego
+    ├── data/access.rego
+    └── api/rate_limit.rego
+```
+
+## Database Schema
+
+The main database schema includes:
+
+```sql
+CREATE TABLE policies (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    path VARCHAR(500) NOT NULL UNIQUE,
+    content TEXT NOT NULL,
+    version INTEGER DEFAULT 1,
+    metadata JSONB DEFAULT '{}',
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+## Development Workflow
+
+### Adding New Policies
+
+1. **Create Rego file** in `sample-policies/`:
+```rego
+# TITLE: My New Policy
+# DESCRIPTION: Description of what this policy does
+# TAGS: security, custom
+
+package my.policy
+
+allow if {
+    # Your policy logic here
+}
+```
+
+2. **Load into database**:
+```bash
+make load-policies
+```
+
+3. **Test the policy**:
+```bash
+curl -X POST http://localhost:8181/v1/data/my/policy/allow \
+  -H "Content-Type: application/json" \
+  -d '{"input": {"your": "test_data"}}'
+```
+
+### Monitoring Policy Updates
+
+```bash
+# Watch OPA logs for bundle updates
+docker-compose logs -f opa
+
+# Check bundle server status
+curl http://localhost:8080/status | jq .
+
+# Monitor database for policy changes
+make db-shell
+# Then: SELECT * FROM policies ORDER BY updated_at DESC LIMIT 5;
+```
+
+### Configuration Options
+
+**OPA Polling Configuration** (`opa-config.yaml`):
+```yaml
+bundles:
+  policies:
+    polling:
+      min_delay_seconds: 10    # Minimum polling interval
+      max_delay_seconds: 20    # Maximum polling interval
+```
+
+**Bundle Server Environment Variables**:
+- `DATABASE_URL`: PostgreSQL connection string
+- `PORT`: Server port (default: 8080)
+
+## API Endpoints
+
+### Bundle Server
+- `GET /bundles/policies` - OPA bundle (tar.gz format)
+- `GET /health` - Health check
+- `GET /status` - Policy statistics and status
+
+### OPA Server
+- `POST /v1/data/{policy_path}` - Policy decisions
+- `GET /v1/data` - All loaded policies
+- `GET /health` - Health check
+- `GET /v1/status` - OPA status and bundle info
+
+## Sample Policies
+
+### 1. RBAC (Role-Based Access Control)
+```rego
+package rbac
+
+allow if {
+    user_has_role(input.user, input.required_role)
+}
+
+user_has_role(user, role) if {
+    role in user.roles
+}
+```
+
+### 2. Data Access Control
+```rego
+package data.access
+
+allow if {
+    input.action == "read"
+    input.resource.owner == input.user.id
+}
+```
+
+### 3. API Rate Limiting
+```rego
+package api.rate_limit
+
+allow if {
+    input.requests_per_minute < max_requests_for_user
+}
+
+max_requests_for_user := 1000 if {
+    input.user.tier == "premium"
+}
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **OPA not loading policies**:
+   - Check bundle server health: `curl http://localhost:8080/health`
+   - Verify OPA can reach bundle server: `docker-compose logs opa`
+
+2. **Database connection errors**:
+   - Ensure PostgreSQL is running: `docker-compose ps postgres`
+   - Check connection string in environment variables
+
+3. **Policy compilation errors**:
+   - Validate Rego syntax before loading
+   - Check OPA logs: `docker-compose logs opa`
+
+### Useful Commands
+
+```bash
+# View all services
+make status
+
+# Reset everything
+make clean && make dev-up
+
+# Run specific tests
+make query
+
+# Access database
+make db-shell
+
+# View bundle contents
+curl -s http://localhost:8080/status | jq .
+```
+
+## Production Considerations
+
+1. **Security**: Use proper authentication for bundle server
+2. **Performance**: Consider caching compiled policies
+3. **Monitoring**: Implement proper logging and metrics
+4. **High Availability**: Run multiple bundle server instances
+5. **Database**: Use connection pooling and read replicas
+6. **SSL/TLS**: Enable encryption for all communications
+
+## Extensions
+
+- Add webhook notifications for immediate policy updates
+- Implement policy validation before database insertion
+- Add policy approval workflows
+- Create web UI for policy management
+- Integrate with CI/CD pipelines for policy deployment
+
+This example provides a solid foundation for implementing OPA with database-backed policy storage in production environments.

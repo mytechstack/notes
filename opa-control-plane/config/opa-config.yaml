@@ -1,0 +1,30 @@
+services:
+  bundle-server:
+    url: "http://localhost:8080"
+    headers:
+      User-Agent: "OPA/1.0"
+
+bundles:
+  policies:
+    service: bundle-server
+    resource: "/bundles/policies"
+    polling:
+      min_delay_seconds: 10
+      max_delay_seconds: 20
+    persist: false
+    size_limit_bytes: 1048576
+
+decision_logs:
+  console: true
+  reporting:
+    min_delay_seconds: 5
+    max_delay_seconds: 10
+
+status:
+  console: true
+
+server:
+  host: "0.0.0.0"
+  port: 8181
+
+default_decision: "/rbac/allow"
