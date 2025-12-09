@@ -240,7 +240,9 @@ Both teams have distinct roadmaps that don't overlap
 My recommendation remains Option 1, but the diagram helps you assess which option fits your organizational reality. The "Decision Criteria" section at the bottom highlights what you need to evaluate.
 Would you like me to create an implementation roadmap for a specific option?
 
-architecture diagram
+
+
+======architecture diagram
 
 
 graph TB
