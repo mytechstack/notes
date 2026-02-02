@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cache Pre-hydration Architecture</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 40px;
+        }
+        .diagram-section {
+            margin-bottom: 50px;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        svg {
+            width: 100%;
+            height: auto;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            background: #fafbfc;
+        }
+        .legend {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .legend-box {
+            width: 40px;
+            height: 30px;
+            border-radius: 4px;
+            border: 2px solid #333;
+        }
+        .legend-text {
+            font-size: 14px;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cache Pre-hydration Architecture & Flow</h1>
+        
+        <!-- Architecture Diagram -->
+        <div class="diagram-section">
+            <div class="section-title">1. System Architecture</div>
+            <svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+                <!-- User/Client Layer -->
+                <rect x="50" y="50" width="150" height="80" fill="#3498db" stroke="#2c3e50" stroke-width="2" rx="8"/>
+                <text x="125" y="90" text-anchor="middle" fill="white" font-size="16" font-weight="bold">User Browser</text>
+                <text x="125" y="110" text-anchor="middle" fill="white" font-size="12">Login Page</text>
+                
+                <!-- Platform Layer -->
+                <rect x="50" y="200" width="150" height="80" fill="#9b59b6" stroke="#2c3e50" stroke-width="2" rx="8"/>
+                <text x="125" y="235" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Your Platform</text>
+                <text x="125" y="255" text-anchor="middle" fill="white" font-size="12">Login Handler</text>
+                
+                <!-- Session Tracker -->
+                <rect x="50" y="350" width="150" height="80" fill="#e67e22" stroke="#2c3e50" stroke-width="2" rx="8"/>
+                <text x="125" y="380" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Session</text>
+                <text x="125" y="400" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Tracker</text>
+                <text x="125" y="418" text-anchor="middle" fill="white" font-size="11">Stores patterns</text>
+                
+                <!-- Cache Pre-hydrator -->
+                <rect x="300" y="200" width="180" height="100" fill="#16a085" stroke="#2c3e50" stroke-width="2" rx="8"/>
+                <text x="390" y="235" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Cache</text>
+                <text x="390" y="255" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Pre-hydrator</text>
+                <text x="390" y="280" text-anchor="middle" fill="white" font-size="11">Orchestrates</text>
+                <text x="390" y="295" text-anchor="middle" fill="white" font-size="11">service calls</text>
+                
+                <!-- Redis Cache -->
+                <rect x="300" y="350" width="180" height="80" fill="#c0392b" stroke="#2c3e50" stroke-width="2" rx="8"/>
+                <text x="390" y="385" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Redis Cache</text>
+                <text x="390" y="408" text-anchor="middle" fill="white" font-size="12">Distributed Cache</text>
+                
+                <!-- Backend Services -->
+                <g id="services">
+                    <!-- Profile Service -->
+                    <rect x="600" y="50" width="140" height="70" fill="#27ae60" stroke="#2c3e50" stroke-width="2" rx="8"/>
+                    <text x="670" y="80" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Profile</text>
+                    <text x="670" y="100" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Service</text>
+                    
+                    <!-- Preferences Service -->
+                    <rect x="600" y="150" width="140" height="70" fill="#27ae60" stroke="#2c3e50" stroke-width="2" rx="8"/>
+                    <text x="670" y="180" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Preferences</text>
+                    <text x="670" y="200" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Service</text>
+                    
+                    <!-- Auth Service -->
+                    <rect x="600" y="250" width="140" height="70" fill="#27ae60" stroke="#2c3e50" stroke-width="2" rx="8"/>
+                    <text x="670" y="280" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Auth/Permissions</text>
+                    <text x="670" y="300" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Service</text>
+                    
+                    <!-- Resource Service -->
+                    <rect x="600" y="350" width="140" height="70" fill="#27ae60" stroke="#2c3e50" stroke-width="2" rx="8"/>
+                    <text x="670" y="380" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Resource</text>
+                    <text x="670" y="400" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Service</text>
+                    
+                    <!-- More Services -->
+                    <rect x="600" y="450" width="140" height="70" fill="#27ae60" stroke="#2c3e50" stroke-width="2" rx="8"/>
+                    <text x="670" y="480" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Other</text>
+                    <text x="670" y="500" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Services...</text>
+                </g>
+                
+                <!-- Application Teams -->
+                <rect x="900" y="50" width="250" height="120" fill="#34495e" stroke="#2c3e50" stroke-width="2" rx="8" stroke-dasharray="5,5"/>
+                <text x="1025" y="80" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Application Teams</text>
+                <text x="1025" y="105" text-anchor="middle" fill="white" font-size="12">Team A App</text>
+                <text x="1025" y="125" text-anchor="middle" fill="white" font-size="12">Team B App</text>
+                <text x="1025" y="145" text-anchor="middle" fill="white" font-size="12">Team C App...</text>
+                <text x="1025" y="162" text-anchor="middle" fill="#95a5a6" font-size="11" font-style="italic">Running on your platform</text>
+                
+                <!-- Arrows -->
+                <!-- User to Platform -->
+                <path d="M 125 130 L 125 200" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+                <text x="140" y="170" font-size="12" fill="#2c3e50">1. Login</text>
+                
+                <!-- Platform to Session Tracker -->
+                <path d="M 125 280 L 125 350" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+                <text x="140" y="320" font-size="12" fill="#2c3e50">2. Get session</text>
+                
+                <!-- Session Tracker to Cache Pre-hydrator -->
+                <path d="M 200 390 L 300 250" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+                <text x="220" y="310" font-size="12" fill="#2c3e50">3. Previous</text>
+                <text x="220" y="325" font-size="12" fill="#2c3e50">session data</text>
+                
+                <!-- Pre-hydrator to Services (parallel) -->
+                <path d="M 480 220 L 600 85" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowhead-red)"/>
+                <path d="M 480 235 L 600 185" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowhead-red)"/>
+                <path d="M 480 250 L 600 285" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowhead-red)"/>
+                <path d="M 480 265 L 600 385" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowhead-red)"/>
+                <path d="M 480 280 L 600 485" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowhead-red)"/>
+                <text x="510" y="150" font-size="13" fill="#e74c3c" font-weight="bold">4. Parallel</text>
+                <text x="510" y="167" font-size="13" fill="#e74c3c" font-weight="bold">API calls</text>
+                
+                <!-- Pre-hydrator to Redis -->
+                <path d="M 390 300 L 390 350" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+                <text x="405" y="330" font-size="12" fill="#2c3e50">5. Store data</text>
+                
+                <!-- Apps to Redis (read) -->
+                <path d="M 900 110 L 480 390" stroke="#27ae60" stroke-width="2" fill="none" marker-end="url(#arrowhead-green)" stroke-dasharray="5,5"/>
+                <text x="700" y="240" font-size="12" fill="#27ae60" font-weight="bold">6. Fast reads</text>
+                <text x="700" y="255" font-size="12" fill="#27ae60" font-weight="bold">(cache hit!)</text>
+                
+                <!-- Arrow markers -->
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#2c3e50"/>
+                    </marker>
+                    <marker id="arrowhead-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#e74c3c"/>
+                    </marker>
+                    <marker id="arrowhead-green" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#27ae60"/>
+                    </marker>
+                </defs>
+                
+                <!-- Labels for async -->
+                <text x="490" y="340" font-size="11" fill="#7f8c8d" font-style="italic">Async/Non-blocking</text>
+            </svg>
+        </div>
+        
+        <!-- Sequence Diagram -->
+        <div class="diagram-section">
+            <div class="section-title">2. Detailed Sequence Flow</div>
+            <svg viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg">
+                <!-- Timeline Headers -->
+                <rect x="50" y="20" width="120" height="50" fill="#3498db" stroke="#2c3e50" stroke-width="2" rx="6"/>
+                <text x="110" y="50" text-anchor="middle" fill="white" font-size="13" font-weight="bold">User</text>
+                
+                <rect x="250" y="20" width="120" height="50" fill="#9b59b6" stroke="#2c3e50" stroke-width="2" rx="6"/>
+                <text x="310" y="50" text-anchor="middle" fill="white" font-size="13" font-weight="bold">Platform</text>
+                
+                <rect x="450" y="20" width="120" height="50" fill="#e67e22" stroke="#2c3e50" stroke-width="2" rx="6"/>
+                <text x="510" y="45" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Session</text>
+                <text x="510" y="60" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Tracker</text>
+                
+                <rect x="650" y="20" width="120" height="50" fill="#16a085" stroke="#2c3e50" stroke-width="2" rx="6"/>
+                <text x="710" y="45" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Pre-</text>
+                <text x="710" y="60" text-anchor="middle" fill="white" font-size="12" font-weight="bold">hydrator</text>
+                
+                <rect x="850" y="20" width="120" height="50" fill="#27ae60" stroke="#2c3e50" stroke-width="2" rx="6"/>
+                <text x="910" y="50" text-anchor="middle" fill="white" font-size="13" font-weight="bold">Services</text>
+                
+                <rect x="1050" y="20" width="120" height="50" fill="#c0392b" stroke="#2c3e50" stroke-width="2" rx="6"/>
+                <text x="1110" y="50" text-anchor="middle" fill="white" font-size="13" font-weight="bold">Redis</text>
+                
+                <!-- Lifelines -->
+                <line x1="110" y1="70" x2="110" y2="850" stroke="#bdc3c7" stroke-width="2" stroke-dasharray="5,5"/>
+                <line x1="310" y1="70" x2="310" y2="850" stroke="#bdc3c7" stroke-width="2" stroke-dasharray="5,5"/>
+                <line x1="510" y1="70" x2="510" y2="850" stroke="#bdc3c7" stroke-width="2" stroke-dasharray="5,5"/>
+                <line x1="710" y1="70" x2="710" y2="850" stroke="#bdc3c7" stroke-width="2" stroke-dasharray="5,5"/>
+                <line x1="910" y1="70" x2="910" y2="850" stroke="#bdc3c7" stroke-width="2" stroke-dasharray="5,5"/>
+                <line x1="1110" y1="70" x2="1110" y2="850" stroke="#bdc3c7" stroke-width="2" stroke-dasharray="5,5"/>
+                
+                <!-- Sequence steps -->
+                <!-- Step 1 -->
+                <path d="M 110 100 L 310 100" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrowhead)"/>
+                <text x="210" y="95" text-anchor="middle" font-size="12" fill="#2c3e50">Lands on login page</text>
+                
+                <!-- Step 2 -->
+                <path d="M 310 140 L 510 140" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrowhead)"/>
+                <text x="410" y="135" text-anchor="middle" font-size="12" fill="#2c3e50">Get previous session</text>
+                <text x="410" y="150" text-anchor="middle" font-size="11" fill="#7f8c8d">(user ID from cookie)</text>
+                
+                <!-- Step 3 -->
+                <path d="M 510 190 L 310 190" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrowhead)"/>
+                <rect x="340" y="170" width="140" height="35" fill="#fff9e6" stroke="#f39c12" stroke-width="1" rx="4"/>
+                <text x="410" y="185" text-anchor="middle" font-size="11" fill="#2c3e50">Session + token +</text>
+                <text x="410" y="198" text-anchor="middle" font-size="11" fill="#2c3e50">access patterns</text>
+                
+                <!-- Step 4 -->
+                <path d="M 310 230 L 710 230" stroke="#e74c3c" stroke-width="2" marker-end="url(#arrowhead-red)"/>
+                <text x="510" y="225" text-anchor="middle" font-size="12" fill="#e74c3c" font-weight="bold">Trigger pre-hydration</text>
+                <text x="510" y="240" text-anchor="middle" font-size="11" fill="#e74c3c">(async, non-blocking)</text>
+                
+                <!-- Step 5 - User continues -->
+                <path d="M 310 280 L 110 280" stroke="#27ae60" stroke-width="2" marker-end="url(#arrowhead-green)" stroke-dasharray="3,3"/>
+                <text x="210" y="275" text-anchor="middle" font-size="12" fill="#27ae60">Show login form</text>
+                <text x="210" y="290" text-anchor="middle" font-size="11" fill="#7f8c8d">(doesn't wait for cache)</text>
+                
+                <!-- Background process box -->
+                <rect x="620" y="310" width="560" height="360" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2" rx="8" stroke-dasharray="5,5"/>
+                <text x="900" y="335" text-anchor="middle" font-size="14" fill="#34495e" font-weight="bold">Background Cache Pre-hydration</text>
+                
+                <!-- Step 6 - Parallel calls -->
+                <path d="M 710 360 L 910 360" stroke="#e74c3c" stroke-width="2" marker-end="url(#arrowhead-red)"/>
+                <text x="810" y="355" text-anchor="middle" font-size="11" fill="#e74c3c">Call Profile API</text>
+                
+                <path d="M 710 390 L 910 390" stroke="#e74c3c" stroke-width="2" marker-end="url(#arrowhead-red)"/>
+                <text x="810" y="385" text-anchor="middle" font-size="11" fill="#e74c3c">Call Preferences API</text>
+                
+                <path d="M 710 420 L 910 420" stroke="#e74c3c" stroke-width="2" marker-end="url(#arrowhead-red)"/>
+                <text x="810" y="415" text-anchor="middle" font-size="11" fill="#e74c3c">Call Auth API</text>
+                
+                <path d="M 710 450 L 910 450" stroke="#e74c3c" stroke-width="2" marker-end="url(#arrowhead-red)"/>
+                <text x="810" y="445" text-anchor="middle" font-size="11" fill="#e74c3c">Call Resource API</text>
+                
+                <text x="810" y="475" text-anchor="middle" font-size="12" fill="#e74c3c" font-weight="bold">All in parallel ⚡</text>
+                
+                <!-- Step 7 - Responses -->
+                <path d="M 910 510 L 710 510" stroke="#27ae60" stroke-width="2" marker-end="url(#arrowhead-green)"/>
+                <text x="810" y="505" text-anchor="middle" font-size="11" fill="#27ae60">Profile data</text>
+                
+                <path d="M 910 535 L 710 535" stroke="#27ae60" stroke-width="2" marker-end="url(#arrowhead-green)"/>
+                <text x="810" y="530" text-anchor="middle" font-size="11" fill="#27ae60">Preferences data</text>
+                
+                <path d="M 910 560 L 710 560" stroke="#27ae60" stroke-width="2" marker-end="url(#arrowhead-green)"/>
+                <text x="810" y="555" text-anchor="middle" font-size="11" fill="#27ae60">Auth data</text>
+                
+                <path d="M 910 585 L 710 585" stroke="#27ae60" stroke-width="2" marker-end="url(#arrowhead-green)"/>
+                <text x="810" y="580" text-anchor="middle" font-size="11" fill="#27ae60">Resource data</text>
+                
+                <!-- Step 8 - Cache storage -->
+                <path d="M 710 620 L 1110 620" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrowhead)"/>
+                <text x="910" y="615" text-anchor="middle" font-size="11" fill="#2c3e50">Store all data in cache</text>
+                <text x="910" y="630" text-anchor="middle" font-size="10" fill="#7f8c8d">(with TTL)</text>
+                
+                <path d="M 1110 655 L 710 655" stroke="#27ae60" stroke-width="2" marker-end="url(#arrowhead-green)"/>
+                <text x="910" y="650" text-anchor="middle" font-size="11" fill="#27ae60">Cache ready ✓</text>
+                
+                <!-- Step 9 - User logs in -->
+                <path d="M 110 720 L 310 720" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrowhead)"/>
+                <text x="210" y="715" text-anchor="middle" font-size="12" fill="#2c3e50">User submits credentials</text>
+                
+                <!-- Step 10 - Auth -->
+                <rect x="280" y="740" width="60" height="40" fill="#9b59b6" stroke="#2c3e50" stroke-width="2" rx="4"/>
+                <text x="310" y="765" text-anchor="middle" font-size="11" fill="white">Verify</text>
+                
+                <!-- Step 11 - App reads from cache -->
+                <path d="M 310 800 L 1110 800" stroke="#27ae60" stroke-width="3" marker-end="url(#arrowhead-green)"/>
+                <text x="710" y="795" text-anchor="middle" font-size="13" fill="#27ae60" font-weight="bold">App reads from cache (FAST!) ⚡</text>
+                <text x="710" y="815" text-anchor="middle" font-size="11" fill="#27ae60">No need to call services - data ready!</text>
+                
+                <!-- Timeline markers -->
+                <text x="20" y="100" font-size="11" fill="#7f8c8d">t0</text>
+                <text x="20" y="280" font-size="11" fill="#7f8c8d">t1</text>
+                <text x="20" y="720" font-size="11" fill="#7f8c8d">t2</text>
+                <text x="20" y="800" font-size="11" fill="#7f8c8d">t3</text>
+            </svg>
+        </div>
+        
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box" style="background: #3498db;"></div>
+                <span class="legend-text">User/Client</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #9b59b6;"></div>
+                <span class="legend-text">Your Platform</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #e67e22;"></div>
+                <span class="legend-text">Session Tracker</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #16a085;"></div>
+                <span class="legend-text">Cache Pre-hydrator</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #27ae60;"></div>
+                <span class="legend-text">Backend Services</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #c0392b;"></div>
+                <span class="legend-text">Redis Cache</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #34495e;"></div>
+                <span class="legend-text">Application Teams</span>
+            </div>
+        </div>
+        
+        <!-- Key Benefits -->
+        <div style="margin-top: 40px; padding: 25px; background: #e8f5e9; border-left: 5px solid #27ae60; border-radius: 8px;">
+            <h3 style="margin-top: 0; color: #27ae60;">Key Benefits</h3>
+            <ul style="line-height: 1.8; color: #2c3e50;">
+                <li><strong>Performance:</strong> Cache is ready before user completes login - sub-100ms response times</li>
+                <li><strong>User Experience:</strong> Application loads instantly after authentication</li>
+                <li><strong>Reduced Load:</strong> Fewer calls to backend services during peak login times</li>
+                <li><strong>Scalability:</strong> Async processing doesn't block the login flow</li>
+                <li><strong>Smart Caching:</strong> Uses historical patterns to pre-load most relevant data</li>
+            </ul>
+        </div>
+        
+        <!-- Important Notes -->
+        <div style="margin-top: 20px; padding: 25px; background: #fff3e0; border-left: 5px solid #ff9800; border-radius: 8px;">
+            <h3 style="margin-top: 0; color: #f57c00;">Important Considerations</h3>
+            <ul style="line-height: 1.8; color: #2c3e50;">
+                <li><strong>Security:</strong> Validate and encrypt session tokens; rotate regularly</li>
+                <li><strong>Privacy:</strong> Clear cached data on logout; comply with data retention policies</li>
+                <li><strong>Graceful Degradation:</strong> App must work even if pre-hydration fails</li>
+                <li><strong>Timeout Strategy:</strong> Use aggressive timeouts (3-5s) for pre-hydration calls</li>
+                <li><strong>Monitoring:</strong> Track cache hit rates, pre-hydration success rates, and latencies</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
