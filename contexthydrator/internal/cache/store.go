@@ -9,6 +9,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	redisc "github.com/yourorg/context-hydrator/internal/redis"
+	"github.com/yourorg/context-hydrator/internal/services"
 )
 
 var ErrCacheMiss = errors.New("cache miss")
@@ -40,47 +41,37 @@ func (s *Store) Ping(ctx context.Context) error {
 	return s.client.Ping(ctx).Err()
 }
 
-// Key builders
-
-func ProfileKey(userID string) string {
-	return redisc.KeyPrefixProfile + userID
-}
-
-func PreferencesKey(userID string) string {
-	return redisc.KeyPrefixPreferences + userID
-}
-
-func PermissionsKey(userID string) string {
-	return redisc.KeyPrefixPermissions + userID
-}
-
-func ResourcesKey(userID string) string {
-	return redisc.KeyPrefixResources + userID
-}
-
-func AccessPatternKey(userID string) string {
-	return redisc.KeyPrefixAccessPattern + userID
-}
-
-func KeyForResource(userID, resource string) (string, bool) {
-	switch resource {
-	case "profile":
-		return ProfileKey(userID), true
-	case "preferences":
-		return PreferencesKey(userID), true
-	case "permissions":
-		return PermissionsKey(userID), true
-	case "resources":
-		return ResourcesKey(userID), true
-	default:
-		return "", false
+// StoreMapping persists the hyd_token → {contextKey, claims} mapping in Redis.
+// Called at login time by the issuing application (via SDK).
+func (s *Store) StoreMapping(ctx context.Context, appID, hydToken string, mapping *services.HydrationMapping) error {
+	b, err := json.Marshal(mapping)
+	if err != nil {
+		return fmt.Errorf("marshal mapping: %w", err)
 	}
+	key := MappingKey(appID, hydToken)
+	return s.client.Set(ctx, key, b, redisc.TTLMapping).Err()
+}
+
+// ResolveMapping retrieves the mapping for a given hyd_token.
+func (s *Store) ResolveMapping(ctx context.Context, appID, hydToken string) (*services.HydrationMapping, error) {
+	b, err := s.client.Get(ctx, MappingKey(appID, hydToken)).Bytes()
+	if errors.Is(err, redis.Nil) {
+		return nil, ErrCacheMiss
+	}
+	if err != nil {
+		return nil, fmt.Errorf("redis get mapping: %w", err)
+	}
+	var m services.HydrationMapping
+	if err := json.Unmarshal(b, &m); err != nil {
+		return nil, fmt.Errorf("unmarshal mapping: %w", err)
+	}
+	return &m, nil
 }
 
 // GetAccessPattern returns the list of resources from the access pattern key,
 // or nil if not found.
-func (s *Store) GetAccessPattern(ctx context.Context, userID string) ([]string, error) {
-	data, err := s.Get(ctx, AccessPatternKey(userID))
+func (s *Store) GetAccessPattern(ctx context.Context, appID, contextKey string) ([]string, error) {
+	data, err := s.Get(ctx, AccessPatternKey(appID, contextKey))
 	if err != nil {
 		return nil, err
 	}
@@ -89,4 +80,33 @@ func (s *Store) GetAccessPattern(ctx context.Context, userID string) ([]string, 
 		return nil, fmt.Errorf("unmarshal access pattern: %w", err)
 	}
 	return resources, nil
+}
+
+// ── Key builders ──────────────────────────────────────────────────────────────
+
+// ResourceCacheKey returns the namespaced cache key for a resource.
+// Format: {appID}:{resource}:{contextKey}
+func ResourceCacheKey(appID, resource, contextKey string) string {
+	return appID + ":" + resource + ":" + contextKey
+}
+
+// MappingKey returns the Redis key for a hydration token mapping.
+func MappingKey(appID, hydToken string) string {
+	return redisc.KeyPrefixMapping + appID + ":" + hydToken
+}
+
+// AccessPatternKey returns the Redis key for a user's access pattern.
+func AccessPatternKey(appID, contextKey string) string {
+	return appID + ":access_pattern:" + contextKey
+}
+
+// KeyForResource returns the cache key for a given resource name and validates it.
+func KeyForResource(appID, contextKey, resource string) (string, bool) {
+	switch services.ServiceName(resource) {
+	case services.ServiceProfile, services.ServicePreferences,
+		services.ServicePermissions, services.ServiceResources:
+		return ResourceCacheKey(appID, resource, contextKey), true
+	default:
+		return "", false
+	}
 }

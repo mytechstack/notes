@@ -10,7 +10,7 @@ import (
 )
 
 func TestDecodeBase64JSON(t *testing.T) {
-	claims := Claims{UserID: "u123", SessionToken: "tok456"}
+	claims := map[string]string{"user_id": "u123", "session_token": "tok456"}
 	b, _ := json.Marshal(claims)
 	encoded := base64.StdEncoding.EncodeToString(b)
 
@@ -25,7 +25,7 @@ func TestDecodeBase64JSON(t *testing.T) {
 }
 
 func TestDecodeBase64JSON_URLEncoding(t *testing.T) {
-	claims := Claims{UserID: "u123"}
+	claims := map[string]string{"user_id": "u123"}
 	b, _ := json.Marshal(claims)
 	encoded := base64.URLEncoding.EncodeToString(b)
 
@@ -61,13 +61,13 @@ func TestDecodeBase64JSON_InvalidBase64(t *testing.T) {
 func TestDecodeJWT(t *testing.T) {
 	secret := "test-secret"
 	type jwtC struct {
-		UserID       string `json:"user_id"`
-		SessionToken string `json:"session_token"`
+		HydrationToken string `json:"hyd_token"`
+		AppID          string `json:"app_id"`
 		jwt.RegisteredClaims
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtC{
-		UserID:       "u999",
-		SessionToken: "s1",
+		HydrationToken: "opaque-token-xyz",
+		AppID:          "test-app",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 		},
@@ -82,17 +82,24 @@ func TestDecodeJWT(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if got.UserID != "u999" {
-		t.Errorf("user_id: got %q, want %q", got.UserID, "u999")
+	if got.HydrationToken != "opaque-token-xyz" {
+		t.Errorf("hyd_token: got %q, want %q", got.HydrationToken, "opaque-token-xyz")
+	}
+	if got.AppID != "test-app" {
+		t.Errorf("app_id: got %q, want %q", got.AppID, "test-app")
 	}
 }
 
 func TestDecodeJWT_WrongSecret(t *testing.T) {
 	type jwtC struct {
-		UserID string `json:"user_id"`
+		HydrationToken string `json:"hyd_token"`
+		AppID          string `json:"app_id"`
 		jwt.RegisteredClaims
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtC{UserID: "u1"})
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtC{
+		HydrationToken: "tok",
+		AppID:          "app",
+	})
 	signed, _ := token.SignedString([]byte("real-secret"))
 
 	d := NewDecoder("jwt", "wrong-secret")

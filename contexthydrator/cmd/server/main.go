@@ -20,6 +20,8 @@ import (
 	"github.com/yourorg/context-hydrator/internal/services"
 )
 
+// cmd/server runs all routes on a single port — used for local development
+// with make dev. For production, use cmd/hydration-server and cmd/context-reader.
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
@@ -38,6 +40,7 @@ func main() {
 	log.Info("redis connected", "addr", cfg.RedisAddr)
 
 	store := cache.NewStore(redisClient)
+	appConfig := cfg.DefaultAppConfig()
 
 	httpClient := services.NewHTTPClient()
 	backend := services.NewBackend(services.BackendConfig{
@@ -52,7 +55,7 @@ func main() {
 
 	decoder := cookie.NewDecoder(cfg.CookieEncoding, cfg.CookieSecret)
 
-	srv := api.NewServer(store, hyd, decoder, backend, log)
+	srv := api.NewServer(store, hyd, decoder, appConfig, log)
 
 	httpServer := &http.Server{
 		Addr:         ":" + cfg.Port,
@@ -65,7 +68,7 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		log.Info("server starting", "port", cfg.Port)
+		log.Info("server starting", "port", cfg.Port, "mode", "combined", "app_id", appConfig.AppID)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Error("server error", "error", err)
 			os.Exit(1)
@@ -75,7 +78,6 @@ func main() {
 	<-quit
 	log.Info("shutdown signal received")
 
-	// 15s covers max 4s backend timeout + Redis writes for in-flight goroutines
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 

@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+
+	"github.com/yourorg/context-hydrator/internal/cache"
 )
 
 type hydrateRequest struct {
@@ -29,16 +31,50 @@ func (s *Server) handleHydrate() http.HandlerFunc {
 			return
 		}
 
-		// Fire-and-forget: use background context so HTTP response cancellation
-		// does not kill the hydration goroutine.
+		var contextKey string
+		var rawClaims map[string]string
+
+		if claims.HydrationToken != "" {
+			// JWT mode: resolve hyd_token → {contextKey, claims} from Redis mapping.
+			// The mapping is stored at login time by the issuing application.
+			appID := claims.AppID
+			if appID == "" {
+				appID = s.appID()
+			}
+			mapping, err := s.store.ResolveMapping(r.Context(), appID, claims.HydrationToken)
+			if err != nil {
+				if err == cache.ErrCacheMiss {
+					s.log.WarnContext(r.Context(), "hydration mapping not found", "app_id", appID)
+					http.Error(w, `{"error":"invalid token"}`, http.StatusBadRequest)
+				} else {
+					s.log.ErrorContext(r.Context(), "mapping lookup failed", "error", err)
+					http.Error(w, `{"error":"service unavailable"}`, http.StatusServiceUnavailable)
+				}
+				return
+			}
+			contextKey = mapping.ContextKey
+			rawClaims = mapping.Claims
+		} else {
+			// base64json mode: use user_id directly as contextKey (local dev).
+			contextKey = claims.UserID
+			rawClaims = map[string]string{"user_id": claims.UserID}
+		}
+
+		if s.appConfig == nil {
+			// No app config — accept the request but skip hydration (test mode).
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusAccepted)
+			json.NewEncoder(w).Encode(map[string]string{"status": "accepted"})
+			return
+		}
+
+		// Fire-and-forget: background context so HTTP cancellation does not
+		// kill the hydration goroutine.
 		bgCtx := context.Background()
-		go s.hydrator.RunHydration(bgCtx, claims.UserID)
+		go s.hydrator.RunHydration(bgCtx, s.appConfig, contextKey, rawClaims)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusAccepted)
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  "accepted",
-			"user_id": claims.UserID,
-		})
+		json.NewEncoder(w).Encode(map[string]string{"status": "accepted"})
 	}
 }

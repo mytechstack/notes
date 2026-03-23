@@ -8,12 +8,24 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// Claims holds the decoded identity from a hydration cookie.
+//
+// In JWT mode (COOKIE_ENCODING=jwt):
+//   - HydrationToken is the opaque hyd_token; AppID identifies the issuing app.
+//   - The hydrate handler resolves HydrationToken → {contextKey, claims} via Redis.
+//
+// In base64json mode (COOKIE_ENCODING=base64json):
+//   - UserID is used directly as the contextKey (local dev / backward compat).
 type Claims struct {
-	UserID       string `json:"user_id"`
-	SessionToken string `json:"session_token"`
+	// JWT mode
+	HydrationToken string `json:"hyd_token,omitempty"`
+	AppID          string `json:"app_id,omitempty"`
+
+	// base64json mode
+	UserID       string `json:"user_id,omitempty"`
+	SessionToken string `json:"session_token,omitempty"`
 }
 
-// Decoder decodes an encoded cookie string into Claims.
 type Decoder struct {
 	encoding string // "base64json" or "jwt"
 	secret   []byte
@@ -35,7 +47,6 @@ func (d *Decoder) Decode(raw string) (*Claims, error) {
 func (d *Decoder) decodeBase64JSON(raw string) (*Claims, error) {
 	b, err := base64.StdEncoding.DecodeString(raw)
 	if err != nil {
-		// try URL encoding as fallback
 		b, err = base64.URLEncoding.DecodeString(raw)
 		if err != nil {
 			return nil, fmt.Errorf("base64 decode: %w", err)
@@ -53,8 +64,8 @@ func (d *Decoder) decodeBase64JSON(raw string) (*Claims, error) {
 
 func (d *Decoder) decodeJWT(raw string) (*Claims, error) {
 	type jwtClaims struct {
-		UserID       string `json:"user_id"`
-		SessionToken string `json:"session_token"`
+		HydrationToken string `json:"hyd_token"`
+		AppID          string `json:"app_id"`
 		jwt.RegisteredClaims
 	}
 
@@ -72,11 +83,15 @@ func (d *Decoder) decodeJWT(raw string) (*Claims, error) {
 	if !ok || !token.Valid {
 		return nil, fmt.Errorf("invalid jwt claims")
 	}
-	if claims.UserID == "" {
-		return nil, fmt.Errorf("missing user_id in jwt")
+	if claims.HydrationToken == "" {
+		return nil, fmt.Errorf("missing hyd_token in jwt")
 	}
+	if claims.AppID == "" {
+		return nil, fmt.Errorf("missing app_id in jwt")
+	}
+
 	return &Claims{
-		UserID:       claims.UserID,
-		SessionToken: claims.SessionToken,
+		HydrationToken: claims.HydrationToken,
+		AppID:          claims.AppID,
 	}, nil
 }

@@ -8,21 +8,18 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// Cache key TTLs
+// Cache key TTLs — per resource, tuned by sensitivity and change frequency.
 const (
-	TTLProfile     = 3600 * time.Second
-	TTLPreferences = 3600 * time.Second
-	TTLPermissions = 3600 * time.Second
-	TTLResources   = 3600 * time.Second
+	TTLProfile     = 12 * time.Hour
+	TTLPreferences = 4 * time.Hour
+	TTLPermissions = 15 * time.Minute
+	TTLResources   = 30 * time.Minute
+	TTLMapping     = 30 * 24 * time.Hour // persistent hydration token lifetime
 )
 
 // Key prefixes
 const (
-	KeyPrefixProfile       = "user:profile:"
-	KeyPrefixPreferences   = "user:preferences:"
-	KeyPrefixPermissions   = "user:permissions:"
-	KeyPrefixResources     = "user:resources:"
-	KeyPrefixAccessPattern = "user:access_pattern:"
+	KeyPrefixMapping = "hyd:mapping:"
 )
 
 func NewClient(addr, password string, db int) (*redis.Client, error) {

@@ -1,0 +1,40 @@
+services:
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mockbackend:
+    build:
+      context: .
+      target: builder
+    command: ["./bin/mockbackend", "-port=9000", "-latency=50ms"]
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
+
+  hydrator:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      REDIS_ADDR: redis:6379
+      PROFILE_SERVICE_URL: http://mockbackend:9000
+      PREFERENCES_SERVICE_URL: http://mockbackend:9000
+      PERMISSIONS_SERVICE_URL: http://mockbackend:9000
+      RESOURCES_SERVICE_URL: http://mockbackend:9000
+    depends_on:
+      redis:
+        condition: service_healthy
+      mockbackend:
+        condition: service_started
+    restart: unless-stopped

@@ -9,41 +9,40 @@ import (
 	"github.com/yourorg/context-hydrator/internal/services"
 )
 
-var DefaultResources = []services.ServiceName{
-	services.ServiceProfile,
-	services.ServicePreferences,
-	services.ServicePermissions,
-	services.ServiceResources,
-}
-
 // ResolveResources returns the resource list from the access pattern cache,
-// falling back to DefaultResources if not found or on error.
-func ResolveResources(ctx context.Context, store *cache.Store, userID string, log *slog.Logger) []services.ServiceName {
-	resources, err := store.GetAccessPattern(ctx, userID)
+// falling back to all resources defined in appConfig if not found or on error.
+func ResolveResources(ctx context.Context, store *cache.Store, appConfig *services.AppConfig, contextKey string, log *slog.Logger) []services.ServiceName {
+	resources, err := store.GetAccessPattern(ctx, appConfig.AppID, contextKey)
 	if err != nil {
 		if !errors.Is(err, cache.ErrCacheMiss) {
 			log.WarnContext(ctx, "failed to load access pattern, using defaults",
-				"user_id", userID, "error", err)
+				"app_id", appConfig.AppID, "context_key", contextKey, "error", err)
 		}
-		return DefaultResources
+		return allConfiguredResources(appConfig)
 	}
 
-	// Validate and convert to ServiceName slice
+	// Validate against app's configured resources
 	valid := make([]services.ServiceName, 0, len(resources))
 	for _, r := range resources {
 		svc := services.ServiceName(r)
-		switch svc {
-		case services.ServiceProfile, services.ServicePreferences,
-			services.ServicePermissions, services.ServiceResources:
+		if _, ok := appConfig.Resources[svc]; ok {
 			valid = append(valid, svc)
-		default:
+		} else {
 			log.WarnContext(ctx, "unknown resource in access pattern, skipping",
-				"user_id", userID, "resource", r)
+				"app_id", appConfig.AppID, "context_key", contextKey, "resource", r)
 		}
 	}
 
 	if len(valid) == 0 {
-		return DefaultResources
+		return allConfiguredResources(appConfig)
 	}
 	return valid
+}
+
+func allConfiguredResources(appConfig *services.AppConfig) []services.ServiceName {
+	out := make([]services.ServiceName, 0, len(appConfig.Resources))
+	for name := range appConfig.Resources {
+		out = append(out, name)
+	}
+	return out
 }
