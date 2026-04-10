@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+
+  # ── Mock OAuth 2.0 server ───────────────────────────────────────────────────
+  oauth-server:
+    build: ./oauth-server
+    container_name: oauth-server
+    environment:
+      JWT_SECRET: "super-secret-key-change-in-prod"
+      PORT: "8082"
+    ports:
+      - "8082:8082"
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8082/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── Mock backend service ────────────────────────────────────────────────────
+  backend-service:
+    build: ./backend-service
+    container_name: backend-service
+    environment:
+      JWT_SECRET: "super-secret-key-change-in-prod"
+      PORT: "8081"
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8081/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── Envoy proxy ─────────────────────────────────────────────────────────────
+  envoy:
+    image: envoyproxy/envoy:v1.29-latest
+    container_name: envoy
+    volumes:
+      - ./envoy/envoy.yaml:/etc/envoy/envoy.yaml:ro
+    ports:
+      - "8080:8080"   # proxy listener
+      - "9901:9901"   # admin dashboard
+    command: ["/usr/local/bin/envoy", "-c", "/etc/envoy/envoy.yaml", "--log-level", "info"]
+    depends_on:
+      oauth-server:
+        condition: service_healthy
+      backend-service:
+        condition: service_healthy
+
+networks:
+  default:
+    name: envoy-oauth-demo

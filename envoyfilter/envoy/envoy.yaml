@@ -1,0 +1,124 @@
+static_resources:
+
+  listeners:
+  - name: listener_0
+    address:
+      socket_address:
+        address: 0.0.0.0
+        port_value: 8080
+    filter_chains:
+    - filters:
+      - name: envoy.filters.network.http_connection_manager
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          stat_prefix: ingress_http
+          codec_type: AUTO
+          access_log:
+          - name: envoy.access_loggers.stdout
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
+          route_config:
+            name: local_route
+            virtual_hosts:
+            - name: backend
+              domains: ["*"]
+              routes:
+              - match:
+                  prefix: "/"
+                route:
+                  cluster: backend_service
+                  timeout: 10s
+          http_filters:
+          # ── Lua filter ──────────────────────────────────────────────────────
+          # For every incoming request:
+          #   1. Call the OAuth server (client_credentials) to get a fresh JWT
+          #   2. Replace (or add) the Authorization header with the new token
+          #   3. Add x-envoy-injected-token: true so the backend can confirm
+          # ────────────────────────────────────────────────────────────────────
+          - name: envoy.filters.http.lua
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+              inline_code: |
+                function envoy_on_request(request_handle)
+                  -- Fetch a fresh token from the OAuth server
+                  local ok, headers, body = pcall(function()
+                    return request_handle:httpCall(
+                      "oauth_server",
+                      {
+                        [":method"]       = "POST",
+                        [":path"]         = "/token",
+                        [":authority"]    = "oauth-server",
+                        ["content-type"]  = "application/x-www-form-urlencoded"
+                      },
+                      "grant_type=client_credentials&client_id=envoy-proxy&client_secret=envoy-secret",
+                      5000
+                    )
+                  end)
+
+                  if not ok then
+                    request_handle:logErr("[lua] OAuth call failed: " .. tostring(headers))
+                    return
+                  end
+
+                  -- Parse access_token from JSON response (no external JSON lib needed)
+                  local access_token = body:match('"access_token"%s*:%s*"([^"]+)"')
+
+                  if access_token then
+                    -- Replace any existing Authorization header (incl. fake client tokens)
+                    request_handle:headers():replace("authorization", "Bearer " .. access_token)
+                    -- Signal to the backend that this token was injected by Envoy
+                    request_handle:headers():add("x-envoy-injected-token", "true")
+                    request_handle:logInfo("[lua] OAuth token injected for request to "
+                      .. request_handle:headers():get(":path"))
+                  else
+                    request_handle:logErr("[lua] Failed to parse token from OAuth response: "
+                      .. tostring(body))
+                  end
+                end
+
+                function envoy_on_response(response_handle)
+                  response_handle:headers():add("x-processed-by", "envoy-oauth-injector")
+                end
+
+          - name: envoy.filters.http.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+  clusters:
+  # ── Backend service ─────────────────────────────────────────────────────────
+  - name: backend_service
+    connect_timeout: 5s
+    type: STRICT_DNS
+    dns_lookup_family: V4_ONLY
+    lb_policy: ROUND_ROBIN
+    load_assignment:
+      cluster_name: backend_service
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: backend-service
+                port_value: 8081
+
+  # ── OAuth server (used by the Lua filter above) ──────────────────────────────
+  - name: oauth_server
+    connect_timeout: 5s
+    type: STRICT_DNS
+    dns_lookup_family: V4_ONLY
+    lb_policy: ROUND_ROBIN
+    load_assignment:
+      cluster_name: oauth_server
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: oauth-server
+                port_value: 8082
+
+admin:
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 9901
