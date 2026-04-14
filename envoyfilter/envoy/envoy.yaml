@@ -29,63 +29,38 @@ static_resources:
                   cluster: backend_service
                   timeout: 10s
           http_filters:
-          # ── Lua filter ──────────────────────────────────────────────────────
-          # For every incoming request:
-          #   1. Call the OAuth server (client_credentials) to get a fresh JWT
-          #   2. Replace (or add) the Authorization header with the new token
-          #   3. Add x-envoy-injected-token: true so the backend can confirm
+          # ── ext_proc filter ──────────────────────────────────────────────────
+          # Envoy opens a bidirectional gRPC stream (ExternalProcessor/Process)
+          # to the token-manager for every request.
+          #
+          # processing_mode controls which phases are streamed to the service:
+          #   request_header_mode: SEND  → we mutate headers here (inject token)
+          #   response_header_mode: SKIP → we don't need to touch the response
+          #   body/trailer modes default to NONE (not streamed)
+          #
+          # The token-manager responds with a HeaderMutation that sets:
+          #   authorization: Bearer <cached-jwt>
+          #   x-envoy-injected-token: true
           # ────────────────────────────────────────────────────────────────────
-          - name: envoy.filters.http.lua
+          - name: envoy.filters.http.ext_proc
             typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
-              inline_code: |
-                function envoy_on_request(request_handle)
-                  -- Fetch a fresh token from the OAuth server
-                  local ok, headers, body = pcall(function()
-                    return request_handle:httpCall(
-                      "oauth_server",
-                      {
-                        [":method"]       = "POST",
-                        [":path"]         = "/token",
-                        [":authority"]    = "oauth-server",
-                        ["content-type"]  = "application/x-www-form-urlencoded"
-                      },
-                      "grant_type=client_credentials&client_id=envoy-proxy&client_secret=envoy-secret",
-                      5000
-                    )
-                  end)
-
-                  if not ok then
-                    request_handle:logErr("[lua] OAuth call failed: " .. tostring(headers))
-                    return
-                  end
-
-                  -- Parse access_token from JSON response (no external JSON lib needed)
-                  local access_token = body:match('"access_token"%s*:%s*"([^"]+)"')
-
-                  if access_token then
-                    -- Replace any existing Authorization header (incl. fake client tokens)
-                    request_handle:headers():replace("authorization", "Bearer " .. access_token)
-                    -- Signal to the backend that this token was injected by Envoy
-                    request_handle:headers():add("x-envoy-injected-token", "true")
-                    request_handle:logInfo("[lua] OAuth token injected for request to "
-                      .. request_handle:headers():get(":path"))
-                  else
-                    request_handle:logErr("[lua] Failed to parse token from OAuth response: "
-                      .. tostring(body))
-                  end
-                end
-
-                function envoy_on_response(response_handle)
-                  response_handle:headers():add("x-processed-by", "envoy-oauth-injector")
-                end
+              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_proc.v3.ExternalProcessor
+              grpc_service:
+                envoy_grpc:
+                  cluster_name: token_manager_grpc
+              processing_mode:
+                request_header_mode: SEND
+                response_header_mode: SKIP
+              message_timeout: 5s
+              # Block requests if the token-manager is unreachable
+              failure_mode_allow: false
 
           - name: envoy.filters.http.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
   clusters:
-  # ── Backend service ─────────────────────────────────────────────────────────
+  # ── Backend service ──────────────────────────────────────────────────────────
   - name: backend_service
     connect_timeout: 5s
     type: STRICT_DNS
@@ -101,21 +76,27 @@ static_resources:
                 address: backend-service
                 port_value: 8081
 
-  # ── OAuth server (used by the Lua filter above) ──────────────────────────────
-  - name: oauth_server
+  # ── Token-manager gRPC (ext_proc) ─────────────────────────────────────────
+  # Must use HTTP/2 — gRPC requires it.
+  - name: token_manager_grpc
     connect_timeout: 5s
     type: STRICT_DNS
     dns_lookup_family: V4_ONLY
     lb_policy: ROUND_ROBIN
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        explicit_http_config:
+          http2_protocol_options: {}
     load_assignment:
-      cluster_name: oauth_server
+      cluster_name: token_manager_grpc
       endpoints:
       - lb_endpoints:
         - endpoint:
             address:
               socket_address:
-                address: oauth-server
-                port_value: 8082
+                address: token-manager
+                port_value: 9090
 
 admin:
   address:

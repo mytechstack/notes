@@ -34,6 +34,33 @@ services:
       timeout: 3s
       retries: 5
 
+  # ── Token-manager sidecar (ext_proc gRPC) ──────────────────────────────────
+  # Envoy opens a gRPC stream (ExternalProcessor/Process) for every request.
+  # The service returns a cached JWT; only calls OAuth when near expiry.
+  #   9090 — gRPC ext_proc  (Envoy connects here)
+  #   8083 — HTTP /health   (Docker health check)
+  token-manager:
+    build: ./token-manager
+    container_name: token-manager
+    environment:
+      OAUTH_SERVER_URL: "http://oauth-server:8082"
+      CLIENT_ID: "envoy-proxy"
+      CLIENT_SECRET: "envoy-secret"
+      REFRESH_BUFFER_SECS: "60"
+      GRPC_PORT: "9090"
+      HEALTH_PORT: "8083"
+    ports:
+      - "9090:9090"   # gRPC ext_proc
+      - "8083:8083"   # HTTP health check
+    depends_on:
+      oauth-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8083/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   # ── Envoy proxy ─────────────────────────────────────────────────────────────
   envoy:
     image: envoyproxy/envoy:v1.29-latest
@@ -45,7 +72,7 @@ services:
       - "9901:9901"   # admin dashboard
     command: ["/usr/local/bin/envoy", "-c", "/etc/envoy/envoy.yaml", "--log-level", "info"]
     depends_on:
-      oauth-server:
+      token-manager:
         condition: service_healthy
       backend-service:
         condition: service_healthy

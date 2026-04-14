@@ -73,7 +73,7 @@ class BackendHandler(BaseHTTPRequestHandler):
                 token_status = {
                     "valid": True,
                     "claims": claims,
-                    "injected_by_envoy": headers_dict.get("x-envoy-injected-token") == "true",
+                    "injected_by_envoy": headers_dict.get("x-token-injected-by-proxy") == "true",
                 }
                 print(f"[backend-service] Valid token — sub={claims.get('sub')} path={path}", flush=True)
             except ValueError as e:
