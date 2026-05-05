@@ -1,8 +1,8 @@
-// Define Policy interface here if not exported from '../App'
 export interface Policy {
-  id?: string;
-  name: string;
-  path: string;
-  content: string;
-  active: boolean;
+  id: string
+  name: string
+  path: string
+  content: string
+  version?: number
+  active: boolean
 }

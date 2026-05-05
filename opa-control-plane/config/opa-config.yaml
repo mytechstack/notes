@@ -1,6 +1,6 @@
 services:
   bundle-server:
-    url: "http://localhost:8080"
+    url: "http://bundle-server:8080"
     headers:
       User-Agent: "OPA/1.0"
 
@@ -22,9 +22,5 @@ decision_logs:
 
 status:
   console: true
-
-server:
-  host: "0.0.0.0"
-  port: 8181
 
 default_decision: "/rbac/allow"

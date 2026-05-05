@@ -3,17 +3,16 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
-    network_mode: host
     container_name: opa-postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-opa_policies}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
     ports:
-      - "5433:5433"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database/init-db:/docker-entrypoint-initdb.d:ro
+      - ./database:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -22,13 +21,13 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4:4.23
-    network_mode: host
+    container_name: opa-pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@pgadmin.com
       PGADMIN_DEFAULT_PASSWORD: password
       PGADMIN_LISTEN_PORT: 80
     ports:
-      - 15432:80
+      - "15432:80"
     volumes:
       - pgadmin:/var/lib/pgadmin
     depends_on:
@@ -38,17 +37,44 @@ services:
     build:
       context: ./bundle-server
     container_name: opa-bundle-server
-    network_mode: host
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-opa_policies}?sslmode=disable
       PORT: ${BUNDLE_SERVER_PORT:-8080}
+      OPA_URL: http://opa:8181
     ports:
       - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  policy-ui:
+    build:
+      context: ./policy-ui
+    container_name: opa-policy-ui
+    ports:
+      - "3000:80"
+    depends_on:
+      bundle-server:
+        condition: service_healthy
+
+  opa:
+    image: openpolicyagent/opa:latest
+    container_name: opa-server
+    ports:
+      - "8181:8181"
+    volumes:
+      - ./config/opa-config.yaml:/etc/opa/config.yaml:ro
+    command: run --server --config-file=/etc/opa/config.yaml --log-level=debug --addr=0.0.0.0:8181
+    depends_on:
+      bundle-server:
+        condition: service_healthy
 
 volumes:
   postgres_data:
   pgadmin:
-
