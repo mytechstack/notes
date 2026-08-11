@@ -1,0 +1,18 @@
+# Gateway config schema — platform team owns this file.
+# Each top-level key is a config block services can add to their gateway.yaml.
+
+rate_limit:
+  strategy: "enum[token_bucket, sliding_window]"   # required
+  scope: "string"                                    # required, e.g. per-user, per-endpoint
+  threshold: "string"                                # required, format "N/unit"
+
+retries:
+  max_attempts: "int"                                # required
+  backoff: "enum[fixed, exponential]"                # required
+
+timeouts:
+  connect_ms: "int"                                  # required
+  read_ms: "int"                                      # required
+
+auth:
+  mode: "enum[jwt, mtls, none]"                       # required

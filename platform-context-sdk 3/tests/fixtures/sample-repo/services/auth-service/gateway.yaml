@@ -1,0 +1,17 @@
+service: auth-service
+
+rate_limit:
+  strategy: token_bucket
+  scope: per-user
+  threshold: 100/min
+
+retries:
+  max_attempts: 3
+  backoff: exponential
+
+timeouts:
+  connect_ms: 500
+  read_ms: 2000
+
+auth:
+  mode: jwt

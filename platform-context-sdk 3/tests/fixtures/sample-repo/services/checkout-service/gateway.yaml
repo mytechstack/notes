@@ -1,0 +1,12 @@
+service: checkout-service
+
+retries:
+  max_attempts: 2
+  backoff: fixed
+
+timeouts:
+  connect_ms: 300
+  read_ms: 1500
+
+auth:
+  mode: jwt

@@ -1,0 +1,10 @@
+{
+  "servers": {
+    "platform-context": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["-m", "platform_context_sdk.mcp_server"],
+      "cwd": "${workspaceFolder}"
+    }
+  }
+}
