@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<!-- saved from url=(0253)https://a7a52c64-ed36-4b9b-8b0a-f7f6750feb51.frame.claudeusercontent.com/_f/1786816293-729e/?__frame_t=2H5FaOaPgcITKAR7R3qEOPce.7382f056-41b0-403b-9a6c-6269043eccba.45dd4f7a-0d5f-4f52-98de-126772ca5aab.1786989274&__frame_v=manifest.7ad9d6101669efe9.json -->
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><!-- frame-runtime --><!--<base href="/_f/1786816293-729e/">--><base href="."><script>window.__FRAME_PREAMBLE={"capabilities":{"artifact":"artifact.BWD0CGLd.js","assets":"assets.a_mJ8q_Q.js","comments":"comments.DGBrvfFR.js","db":"db.VpIrzqr_.js","downloads":"downloads.BXsoAvg9.js","mcp":"mcp.D3B2EyQu.js","permissions":"permissions.BNySkLV5.js","room":"room.BgXZkiYR.js","sample":"sample.kXGC3wc0.js","self":"artifact.BWD0CGLd.js","user":"user.CGub7vEP.js"},"transforms":"_transforms.BI3gXbbT.js","comments":"_comments.hMHmCz0l.js","translate":"_translate.3AdCy0Ua.js"}</script><script>(function(){"use strict";var ce=["light","dark","system"],ue=/^[A-Za-z0-9_-]{1,64}$/,V=/^[a-zA-Z_:][a-zA-Z0-9_:.-]{0,127}$/,fe=new Set(["class","hidden","value","checked"]);function de(e){const t=e.toLowerCase();return t.startsWith("data-")||t.startsWith("aria-")||fe.has(t)}var pe="http://www.w3.org/1999/xhtml",me="http://www.w3.org/2000/svg",ge=new Set(["script","style","iframe","noscript","noframes","noembed","xmp","plaintext","template","title","textarea","object","embed"]),_e=new Set(["script","style"]);function ve(e){const t=e.localName.toLowerCase();return e.namespaceURI===pe?!ge.has(t):e.namespaceURI===me?!_e.has(t):!1}function he(e){if(e===null||typeof e!="object")return!1;const t=e.__frame_patch;if(t===null||typeof t!="object")return!1;const{seq:n,elements:a}=t;if(typeof n!="number"||!Number.isSafeInteger(n)||!Array.isArray(a)||a.length===0||a.length>64)return!1;for(const i of a){if(i===null||typeof i!="object")return!1;const r=i;if(typeof r.target!="string"||!ue.test(r.target)||r.text!==void 0&&typeof r.text!="string")return!1;if(r.attrsSet!==void 0){if(r.attrsSet===null||typeof r.attrsSet!="object")return!1;for(const[l,c]of Object.entries(r.attrsSet))if(!V.test(l)||typeof c!="string")return!1}if(r.attrsRemoved!==void 0){if(!Array.isArray(r.attrsRemoved))return!1;for(const l of r.attrsRemoved)if(typeof l!="string"||!V.test(l))return!1}}return!0}function ye(e){if(e===null||typeof e!="object")return!1;const t=e.__frame_init;return t!==null&&typeof t=="object"}function be(e){return e!==null&&typeof e=="object"&&e.__frame_size_poke===!0}function Ee(e){if(e===null||typeof e!="object")return!1;const t=e.__frame_theme;if(t===null||typeof t!="object")return!1;const n=t.theme;return typeof n=="string"&&ce.includes(n)}function we(e){try{typeof reportError=="function"?reportError(e):setTimeout(()=>{throw e},0)}catch{}}var X=["#62744c","#b04e72","#5b7596","#a3651f","#7a6ba8","#3f7a75"],J=e=>{let t=0;for(let n=0;n<e.length;n++)t=t*31+e.charCodeAt(n)>>>0;return X[t%X.length]??"#788c5d"},Z="#c7c9d1",Ae=["data:image","/svg+xml,"].join(""),Q=e=>Ae+"%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 2'%3E%3Ccircle cx='1' cy='1' r='1' fill='"+encodeURIComponent(e)+"'/%3E%3C/svg%3E",Se=Object.freeze({id:null,name:"",avatarUrl:Q(Z),color:Z,email:null,isOwner:!1,canEdit:!1}),je=(...e)=>{const t=e[0],n=typeof t=="string"?[t]:Array.isArray(t)?t.filter(i=>typeof i=="string"):[],a=Object.create(null);for(const i of n)a[i]={id:i,name:"",avatarUrl:Q(J(i)),color:J(i),email:null,isMe:!1};return a},ee=Object.freeze(Object.assign(Object.create(null),{user:Object.freeze(Object.assign(Object.create(null),{id:null,isOwner:!1,canEdit:!1,me:Se,profiles:je,name:"",avatarUrl:null,search:Object.freeze([]),email:null}))})),Re={sample:"sample"};function te(){const e=new Uint8Array(20);try{crypto.getRandomValues(e)}catch{for(let n=0;n<e.length;n++)e[n]=Math.floor(Math.random()*256)}let t="";for(const n of e)t+=(n%36).toString(36);return t}function Oe(e,t){const n=r=>{const l={path:r},c=r.split("/");return{id:c[c.length-1],path:r,get:()=>t("get",[l]),set:d=>t("set",[l,d]),update:d=>t("update",[l,d]),delete:()=>t("delete",[l]),acquire:d=>t("acquire",[l,d]),onSnapshot:(d,E)=>t("subscribe",[l,d,E]),collection:d=>i(r+"/"+String(d))}},a=r=>({where:(l,c,d)=>a({...r,where:[...r.where??[],{f:String(l),op:String(c),v:d}]}),orderBy:(l,c)=>a({...r,orderBy:{f:String(l),dir:c===void 0?"asc":String(c)}}),limit:l=>a({...r,limit:Number(l)}),get:()=>t("query",[r]),onSnapshot:(l,c)=>t("subscribe",[r,l,c])}),i=r=>({...a({collection:r}),path:r,doc:l=>n(r+"/"+(l===void 0?te():String(l))),add:l=>{const c=n(r+"/"+te());return Promise.resolve(c.set(l)).then(()=>c)}});e.doc=r=>n(String(r)),e.collection=r=>i(String(r))}var Pe=Object.freeze([]);function Te(e,t){let n=null,a=null;const i=()=>e.__settled;e.peers=()=>Pe,e.connected=()=>!1,e.emit=()=>i()?.()??Promise.resolve(),e.presence=r=>{const l=i();if(l)return l();let c=null;if(r!==null&&typeof r=="object")try{Array.isArray(r)||(c={...r})}catch{}return c===null?Promise.reject({code:"invalid_argument",message:"presence takes an object"}):(n===null&&(n=Object.create(null),a=Promise.resolve(t("presence",[n]))),Object.assign(n,c),a)}}var B="__frame_scroll",Me=150,Le=310,ke=160,Ce=3e4;function Ne(){let e=0,t=!1,n=!1,a=!1,i=0,r=null;const l=u=>{try{sessionStorage.setItem(B,JSON.stringify({y:u}))}catch{}},c=()=>{if(clearTimeout(e),r===null)return;const u=r;r=null,l(u)},d=()=>{if(t){t=!1;return}n=!0,r=scrollY,clearTimeout(e),e=setTimeout(c,Me)};try{addEventListener("scroll",d,{passive:!0}),addEventListener("pagehide",c)}catch{}const E=()=>{let u;try{u=sessionStorage.getItem(B)}catch{return null}if(u===null)return null;let g;try{g=JSON.parse(u)}catch{g=null}const f=g?.y;if(!(typeof f=="number"&&Number.isFinite(f)&&f>=0)){try{sessionStorage.removeItem(B)}catch{}return null}return f};let T=!1;const h=u=>{try{const g=scrollY;scrollTo({top:u,left:0,behavior:"instant"}),i=u,a=!0,clearTimeout(e),r=null,l(u);const f=scrollY;f!==g&&(t=!0),f!==u&&!T&&(T=!0,addEventListener("load",()=>{try{if(scrollY===f){const p=E();h(p!==null?p:i)}}catch{}},{once:!0}))}catch{}},R=()=>{try{return!!location.hash}catch{return!0}};let A=!1;const O=()=>{try{if(A||innerWidth>Le||innerHeight>ke)return;A=!0;const u=Date.now(),g=()=>{try{removeEventListener("resize",g)}catch{}if(Date.now()-u>Ce||n||R())return;const f=E();h(f!==null?f:i)};addEventListener("resize",g)}catch{}};let M=!1,o=!1;return{restore(){if(M||(M=!0,R()))return;const u=E();u!==null&&(h(u),O())},promoted(){if(o||(o=!0,R()))return;const u=E();u!==null?(h(u),O()):a&&h(i)}}}var Ye="modulepreload",We=function(e){return"/"+e},Ke={},Ue=function(t,n,a){let i=Promise.resolve();function r(l){const c=new Event("vite:preloadError",{cancelable:!0});if(c.payload=l,window.dispatchEvent(c),!c.defaultPrevented)throw l}return i.then(l=>{for(const c of l||[])c.status==="rejected"&&r(c.reason);return t().catch(r)})};(function(){const e=Object.defineProperty,t=globalThis,n=["RTCPeerConnection","webkitRTCPeerConnection","RTCDataChannel","RTCIceCandidate","RTCSessionDescription","RTCRtpSender","RTCRtpReceiver"];let a=0;for(let i=0;i<n.length;i++){const r=n[i];try{e(t,r,{value:void 0,writable:!1,configurable:!1})}catch{try{delete t[r]}catch{}try{e(t,r,{value:void 0,writable:!1,configurable:!0})}catch{}}typeof t[r]=="function"&&a++}if(a&&window!==top)try{parent.postMessage({__frame_rtc_lockdown_failed:a},"*")}catch{}})();var qe=1e4,Ie=Object.freeze([...window.__FRAME_PREAMBLE?.origins??["https://claude.ai","https://preview.claude.ai"]]);function re(e){for(const t of Ie)if(t.endsWith(":*"))try{const n=new URL(e);if(`${n.protocol}//${n.hostname}:*`===t)return!0}catch{}else if(e===t)return!0;return!1}var k=Object.freeze({...window.__FRAME_PREAMBLE?.capabilities}),x=window.__FRAME_PREAMBLE?.transforms,$=window.__FRAME_PREAMBLE?.comments,z=window.__FRAME_PREAMBLE?.translate,q=/^[\w.-]+\.js$/,De=/^[a-z][a-z0-9_-]{0,63}$/,I=e=>Ue(()=>import("/_runtime/"+e),void 0);function Be(e,t){return{contract:e.contract,changes:new Set(e.changes??[]),flags:new Set(e.flags??[]),capabilities:e.capabilities??{},capBudgets:e.capBudgets??{},transforms:new Map,shellOrigin:t,mount:Y,pipe:()=>({wrap:(n,a)=>(...i)=>{try{return a(...i)}catch(r){return Promise.reject(r)}}})}}var ne=null,C=null;function F(e,t,n){try{Object.defineProperty(e,t,{value:n,writable:!1,configurable:!1,enumerable:!0})}catch{try{Object.defineProperty(e,t,{value:n,writable:!1,configurable:!0,enumerable:!0})}catch{}}}var H=!1;function xe(e,t){const n=[];for(const a of e.elements){const i=document.querySelector(`[data-id="${a.target}"]`);if(!i){parent.postMessage({__frame_patch_miss:{seq:e.seq}},t);return}if([...Object.keys(a.attrsSet??{}),...a.attrsRemoved??[]].some(r=>!de(r))){parent.postMessage({__frame_patch_miss:{seq:e.seq}},t);return}if(a.text!==void 0&&!ve(i)){parent.postMessage({__frame_patch_miss:{seq:e.seq}},t);return}for(const[r,l]of Object.entries(a.attrsSet??{}))if(!oe(i,r)){try{i.setAttribute(r,l)}catch{}se(i,r,l)}for(const r of a.attrsRemoved??[])oe(i,r)||(i.removeAttribute(r),se(i,r,null));typeof a.text=="string"&&(i.textContent=a.text),n.push(a.target)}try{document.dispatchEvent(new CustomEvent("claude:edit",{detail:{seq:e.seq,targets:n}}))}catch{}}function se(e,t,n){if(!(e instanceof HTMLInputElement))return;const a=t.toLowerCase();a==="checked"?e.checked=n!==null:a==="value"&&e.type!=="file"&&(e.value=n??"")}function oe(e,t){const n=t.toLowerCase(),a=e;return n==="data-id"||(n==="value"||n==="checked")&&(a.__artifactSecret===!0||/^(password|hidden|file)$/.test(a.type??"")||/(^|\s)(cc-|one-time-code|current-password|new-password)/i.test(`${e.getAttribute("autocomplete")??""} ${a.autocomplete??""}`))}function ae(e){const t=document.documentElement;e==="light"||e==="dark"?(t.dataset.theme=e,t.style.colorScheme=e,H=!0):H&&(delete t.dataset.theme,t.style.colorScheme="",H=!1)}var ie=256,N=Object.assign(Object.create(null),{mcp:Object.assign(Object.create(null),{watchTool:{handlerArg:3}}),db:Object.assign(Object.create(null),{subscribe:{handlerArg:1,errArg:2}}),room:Object.assign(Object.create(null),{on:{handlerArg:1,errArg:2},onPeers:{handlerArg:0,errArg:1},onConnection:{handlerArg:0,errArg:1}})}),$e=Object.assign(Object.create(null),{db:(e,t)=>Oe(e,t),room:(e,t,n)=>Te(e,n)}),j=new Map;function Y(e,t){const n=j.get(e);if(!n)return;const a=Object.assign(Object.create(null),t);Object.assign(n.impl,a),n.r(n.ns),n.impl.__settled=()=>Promise.reject({code:"capability_removed",message:`${e}: method not in this runtime`});const i=n.queue;n.queue=[];for(const r of i){const l=a[r.method];if(l)if(N[e]?.[r.method])try{r.resolve(l(...r.args))}catch{U(r,N[e][r.method],{code:"transform_error",message:`${e}.${r.method} rejected its arguments`})}else l(...r.args).then(r.resolve,r.reject);else{const c={code:"capability_removed",message:`${e}.${r.method} is not in this runtime`},d=N[e]?.[r.method];if(d){U(r,d,c);continue}r.reject(c)}}}function ze(e,t){const n=j.get(e);if(!n)return;n.impl.__settled=()=>Promise.reject(t),n.r(null);const a=n.queue;n.queue=[];for(const i of a){const r=N[e]?.[i.method];if(r){U(i,r,t);continue}i.reject(t)}}function le(e,t){if(typeof e=="function")try{return e(...t)}catch{return Object.create(null)}return Array.isArray(e)?[...e]:e!==null&&typeof e=="object"?{...e}:e}function D(e,t){const n=ee[e];if(!n){ze(e,t);return}j.get(e)?.r(null),Y(e,Object.fromEntries(Object.entries(n).map(([a,i])=>[a,(...r)=>Promise.resolve(le(i,r))])))}function U(e,t,n){if(e.syncState?.dead)return;const a=t.errArg===void 0?void 0:e.args[t.errArg],i=t.errArg===void 0?e.args[t.handlerArg]:a;typeof i=="function"&&queueMicrotask(()=>{if(!e.syncState?.dead)try{i(t.errArg===void 0?{type:"error",error:n}:n)}catch(r){we(r)}})}var W=Object.getOwnPropertyDescriptor(window,"claude");if(window!==top&&!(W&&W.writable===!1)){const e=x&&q.test(x)?I(x).catch(()=>{}):Promise.resolve(void 0),t=o=>{if(o.type==="auxclick"&&o.button!==1)return;const u=o.target,g=u&&u.closest?u.closest("a[href],area[href]"):null;if(!g)return;const f=g.getAttribute("href");if(!f)return;let p,P;try{p=new URL(f,document.baseURI),P=new URL(document.baseURI).origin}catch{return}if((p.protocol==="http:"||p.protocol==="https:")&&p.origin!==P){o.preventDefault();const w=(g.getAttribute("target")??"").toLowerCase(),y=o.type==="auxclick"||o.metaKey||o.ctrlKey||o.shiftKey||o.altKey||!["","_self","_top","_parent"].includes(w);parent.postMessage({__frame_nav:!0,url:p.href,newTab:y},"*")}};addEventListener("click",t,!0),addEventListener("auxclick",t,!0);const n={},a=o=>{o.isTrusted&&(n.pointer=!0)},i=o=>{o.isTrusted&&(n.click=!0)};addEventListener("pointermove",a,{capture:!0,passive:!0}),addEventListener("click",i,{capture:!0,passive:!0}),e.then(o=>{o?.wireNav&&(o.wireNav(),removeEventListener("click",t,!0),removeEventListener("auxclick",t,!0),removeEventListener("pointermove",a,!0),removeEventListener("click",i,!0),o.wireEngagement?.(n))});let r=null;try{r=Ne()}catch{}const l=W?.value??{};F(window,"claude",l);const c=o=>{let u;const g=new Promise(v=>{u=v}),f={impl:Object.create(null),queue:[],u:g,r:u,ns:null};j.set(o,f);const p=f.impl,P=v=>({code:"queue_overflow",message:`${o}.${v}: pre-init call queue is full`}),w=(v,s)=>{if(f.queue.length>=ie){const m=ee[o];return m&&v in m?Promise.resolve(le(m[v],s)):Promise.reject(P(v))}return new Promise((m,_)=>{f.queue.push({method:v,args:s,resolve:m,reject:_})})},y=Re[o],L=new Proxy(y===void 0?p:(()=>{}),{apply:(v,s,m)=>{const _=y,b=p[_]??p.__settled;return b?b(...m):w(_,m)},get:(v,s)=>{if(typeof s!="string"||s==="then"||s==="toJSON"||s==="valueOf")return;if(s==="toString")return Object.prototype.toString;if(y!==void 0&&(s==="call"||s==="apply"||s==="bind"))return Function.prototype[s];const m=N[o]?.[s];return m?(..._)=>{if(typeof _[m.handlerArg]!="function")throw new TypeError(`${o}.${s} requires a handler function`);const b=p[s];if(b)return b(..._);if(p.__settled){const S={dead:!1},Fe={args:[..._],syncState:S};return p.__settled().catch(He=>U(Fe,m,He)),()=>{S.dead=!0}}if(f.queue.length>=ie){const S={dead:!1};return U({args:[..._],syncState:S},m,P(s)),()=>{S.dead=!0}}let K=null;const G={dead:!1};return f.queue.push({method:s,args:_,resolve:S=>{K=typeof S=="function"?S:null,G.dead&&K?.()},reject:()=>{},syncState:G}),()=>{G.dead=!0,K?.()}}:(..._)=>{const b=p[s]??p.__settled;return b?b(..._):w(s,_)}},set:()=>!1});$e[o]?.(p,(v,s)=>L[v](...s),w),f.ns=L,F(l,o,L)};for(const o of Object.keys(k)){if(l[o]!==void 0){F(l,o,l[o]);continue}c(o)}if(l.use===void 0){const o=u=>{if(typeof u!="string"||!Object.hasOwn(k,u))return Promise.resolve(null);const g=j.get(u);return g?g.u:Promise.resolve(l[u]??null)};try{Object.defineProperty(l,"use",{value:o,writable:!0,configurable:!0,enumerable:!1})}catch{}}let d=null,E=null,T=0;const h=o=>{o.source!==parent||!re(o.origin)||ye(o.data)&&(d=o.data.__frame_init,C=o.origin,removeEventListener("message",h),clearTimeout(T),E?.())};addEventListener("message",h),parent.postMessage({__frame_connect:!0},"*");const R=new Promise(o=>{E=o,T=setTimeout(()=>{removeEventListener("message",h),o()},qe)}),A=document.readyState==="loading"?new Promise(o=>document.addEventListener("DOMContentLoaded",()=>o(),{once:!0})):Promise.resolve();A.then(()=>{try{r?.restore()}catch{}});const O={cb:null},M=o=>{if(!(o.source!==parent||!re(o.origin))&&be(o.data)){try{r?.promoted()}catch{}O.cb?.()}};addEventListener("message",M),R.then(async()=>{if(!d||!C){for(const s of j.keys())D(s,{code:"not_granted",message:"frame initialization did not arrive - capability unavailable"});return}ae(d.theme);const o=C;let u=!1,g=!1;addEventListener("message",s=>{if(s.source!==parent||s.origin!==o)return;Ee(s.data)&&ae(s.data.__frame_theme.theme),he(s.data)&&xe(s.data.__frame_patch,o);const m=s.data?.__fc_mode;m&&typeof m=="object"&&!u&&$&&q.test($)&&(u=!0,I($).then(b=>b.install?.(o,m.on===!0)).catch(()=>{}));const _=s.data?.__ft_cmd;_&&typeof _=="object"&&!g&&z&&q.test(z)&&(g=!0,I(z).then(b=>b.install?.(o,_)).catch(()=>{}))});const f=Object.keys(d.capabilities??{});for(const s of f)Object.hasOwn(k,s)||De.test(s)&&l[s]===void 0&&(c(s),D(s,{code:"capability_disabled",message:"capability not in this runtime generation"}));const p=f.filter(s=>Object.hasOwn(k,s)).map(s=>[s,k[s]]).filter(s=>typeof s[1]=="string"&&q.test(s[1])),P=await Promise.allSettled(p.map(([,s])=>I(s))),w=await e,y=C;w?.buildBoot||parent.postMessage({__frame_cap_telemetry:{kind:"cap-load-error",cap:"_transforms"}},y),ne=w?.buildBoot?w.buildBoot(d,w.TRANSFORMS??{},{shellOrigin:y,mount:Y},s=>parent.postMessage({__frame_cap_telemetry:s},y)):Be(d,y);const L=s=>parent.postMessage({__frame_cap_telemetry:{kind:"cap-load-error",cap:s}},y),v=ne;P.forEach((s,m)=>{const _=p[m][0];if(s.status!=="fulfilled"){L(_);return}try{s.value?.install?.(v)}catch{L(_)}});for(const[s,m]of j)if(m.impl.__settled===void 0){if(f.includes(s)){D(s,{code:"capability_disabled",message:"capability not available in this session"});continue}D(s,{code:"not_granted",message:"capability not available in this session"})}await A,parent.postMessage({__frame_ready:!0},C),e.then(s=>s?.installSizeReporter?.(y,O))})}})();</script><!-- /frame-runtime --><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}</style></head><body>
+<!-- saved from url=(0253)https://a7a52c64-ed36-4b9b-8b0a-f7f6750feb51.frame.claudeusercontent.com/_f/1787037134-4dad/?__frame_t=Es7tacnDVeHJa9kS52bAZX8b.7382f056-41b0-403b-9a6c-6269043eccba.45dd4f7a-0d5f-4f52-98de-126772ca5aab.1787040741&__frame_v=manifest.adf4d434a4a8615f.json -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><!-- frame-runtime --><!--<base href="/_f/1787037134-4dad/">--><base href="."><script>window.__FRAME_PREAMBLE={"capabilities":{"artifact":"artifact.BWD0CGLd.js","assets":"assets.BkxVItX2.js","comments":"comments.CqCXYViZ.js","db":"db.5PgiKS-2.js","downloads":"downloads.C3GSvEDP.js","mcp":"mcp.D3B2EyQu.js","permissions":"permissions.BNySkLV5.js","room":"room.BgXZkiYR.js","sample":"sample.B5DdHYz7.js","self":"artifact.BWD0CGLd.js","user":"user.BpKav-Rf.js"},"transforms":"_transforms.BI3gXbbT.js","comments":"_comments.DOfpa5nr.js","translate":"_translate.5HCW4BJh.js"}</script><script>(function(){"use strict";var ce=["light","dark","system"],ue=/^[A-Za-z0-9_-]{1,64}$/,V=/^[a-zA-Z_:][a-zA-Z0-9_:.-]{0,127}$/,fe=new Set(["class","hidden","value","checked"]);function de(e){const t=e.toLowerCase();return t.startsWith("data-")||t.startsWith("aria-")||fe.has(t)}var pe="http://www.w3.org/1999/xhtml",me="http://www.w3.org/2000/svg",ge=new Set(["script","style","iframe","noscript","noframes","noembed","xmp","plaintext","template","title","textarea","object","embed"]),_e=new Set(["script","style"]);function ve(e){const t=e.localName.toLowerCase();return e.namespaceURI===pe?!ge.has(t):e.namespaceURI===me?!_e.has(t):!1}function he(e){if(e===null||typeof e!="object")return!1;const t=e.__frame_patch;if(t===null||typeof t!="object")return!1;const{seq:n,elements:a}=t;if(typeof n!="number"||!Number.isSafeInteger(n)||!Array.isArray(a)||a.length===0||a.length>64)return!1;for(const i of a){if(i===null||typeof i!="object")return!1;const r=i;if(typeof r.target!="string"||!ue.test(r.target)||r.text!==void 0&&typeof r.text!="string")return!1;if(r.attrsSet!==void 0){if(r.attrsSet===null||typeof r.attrsSet!="object")return!1;for(const[l,c]of Object.entries(r.attrsSet))if(!V.test(l)||typeof c!="string")return!1}if(r.attrsRemoved!==void 0){if(!Array.isArray(r.attrsRemoved))return!1;for(const l of r.attrsRemoved)if(typeof l!="string"||!V.test(l))return!1}}return!0}function ye(e){if(e===null||typeof e!="object")return!1;const t=e.__frame_init;return t!==null&&typeof t=="object"}function be(e){return e!==null&&typeof e=="object"&&e.__frame_size_poke===!0}function Ee(e){if(e===null||typeof e!="object")return!1;const t=e.__frame_theme;if(t===null||typeof t!="object")return!1;const n=t.theme;return typeof n=="string"&&ce.includes(n)}function we(e){try{typeof reportError=="function"?reportError(e):setTimeout(()=>{throw e},0)}catch{}}var X=["#62744c","#b04e72","#5b7596","#a3651f","#7a6ba8","#3f7a75"];function J(e){let t=0;for(let n=0;n<e.length;n++)t=t*31+e.charCodeAt(n)>>>0;return X[t%X.length]??"#788c5d"}var Z="#c7c9d1",Ae=["data:image","/svg+xml,"].join("");function Q(e){return Ae+"%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 2'%3E%3Ccircle cx='1' cy='1' r='1' fill='"+encodeURIComponent(e)+"'/%3E%3C/svg%3E"}var Se=Object.freeze({id:null,name:"",avatarUrl:Q(Z),color:Z,email:null,isOwner:!1,canEdit:!1});function je(...e){const t=e[0],n=typeof t=="string"?[t]:Array.isArray(t)?t.filter(i=>typeof i=="string"):[],a=Object.create(null);for(const i of n)a[i]={id:i,name:"",avatarUrl:Q(J(i)),color:J(i),email:null,isMe:!1};return a}var ee=Object.freeze(Object.assign(Object.create(null),{user:Object.freeze(Object.assign(Object.create(null),{id:null,isOwner:!1,canEdit:!1,me:Se,profiles:je,name:"",avatarUrl:null,search:Object.freeze([]),email:null}))})),Re={sample:"sample"};function te(){const e=new Uint8Array(20);try{crypto.getRandomValues(e)}catch{for(let n=0;n<e.length;n++)e[n]=Math.floor(Math.random()*256)}let t="";for(const n of e)t+=(n%36).toString(36);return t}function Oe(e,t){const n=r=>{const l={path:r},c=r.split("/");return{id:c[c.length-1],path:r,get:()=>t("get",[l]),set:d=>t("set",[l,d]),update:d=>t("update",[l,d]),delete:()=>t("delete",[l]),acquire:d=>t("acquire",[l,d]),onSnapshot:(d,E)=>t("subscribe",[l,d,E]),collection:d=>i(r+"/"+String(d))}},a=r=>({where:(l,c,d)=>a({...r,where:[...r.where??[],{f:String(l),op:String(c),v:d}]}),orderBy:(l,c)=>a({...r,orderBy:{f:String(l),dir:c===void 0?"asc":String(c)}}),limit:l=>a({...r,limit:Number(l)}),get:()=>t("query",[r]),onSnapshot:(l,c)=>t("subscribe",[r,l,c])}),i=r=>({...a({collection:r}),path:r,doc:l=>n(r+"/"+(l===void 0?te():String(l))),add:l=>{const c=n(r+"/"+te());return Promise.resolve(c.set(l)).then(()=>c)}});e.doc=r=>n(String(r)),e.collection=r=>i(String(r))}var Pe=Object.freeze([]);function Te(e,t){let n=null,a=null;const i=()=>e.__settled;e.peers=()=>Pe,e.connected=()=>!1,e.emit=()=>i()?.()??Promise.resolve(),e.presence=r=>{const l=i();if(l)return l();let c=null;if(r!==null&&typeof r=="object")try{Array.isArray(r)||(c={...r})}catch{}return c===null?Promise.reject({code:"invalid_argument",message:"presence takes an object"}):(n===null&&(n=Object.create(null),a=Promise.resolve(t("presence",[n]))),Object.assign(n,c),a)}}var B="__frame_scroll",Me=150,Le=310,ke=160,Ce=3e4;function Ne(){let e=0,t=!1,n=!1,a=!1,i=0,r=null;const l=u=>{try{sessionStorage.setItem(B,JSON.stringify({y:u}))}catch{}},c=()=>{if(clearTimeout(e),r===null)return;const u=r;r=null,l(u)},d=()=>{if(t){t=!1;return}n=!0,r=scrollY,clearTimeout(e),e=setTimeout(c,Me)};try{addEventListener("scroll",d,{passive:!0}),addEventListener("pagehide",c)}catch{}const E=()=>{let u;try{u=sessionStorage.getItem(B)}catch{return null}if(u===null)return null;let g;try{g=JSON.parse(u)}catch{g=null}const f=g?.y;if(!(typeof f=="number"&&Number.isFinite(f)&&f>=0)){try{sessionStorage.removeItem(B)}catch{}return null}return f};let T=!1;const h=u=>{try{const g=scrollY;scrollTo({top:u,left:0,behavior:"instant"}),i=u,a=!0,clearTimeout(e),r=null,l(u);const f=scrollY;f!==g&&(t=!0),f!==u&&!T&&(T=!0,addEventListener("load",()=>{try{if(scrollY===f){const p=E();h(p!==null?p:i)}}catch{}},{once:!0}))}catch{}},R=()=>{try{return!!location.hash}catch{return!0}};let A=!1;const O=()=>{try{if(A||innerWidth>Le||innerHeight>ke)return;A=!0;const u=Date.now(),g=()=>{try{removeEventListener("resize",g)}catch{}if(Date.now()-u>Ce||n||R())return;const f=E();h(f!==null?f:i)};addEventListener("resize",g)}catch{}};let M=!1,o=!1;return{restore(){if(M||(M=!0,R()))return;const u=E();u!==null&&(h(u),O())},promoted(){if(o||(o=!0,R()))return;const u=E();u!==null?(h(u),O()):a&&h(i)}}}var Ye="modulepreload",We=function(e){return"/"+e},Ke={},Ue=function(t,n,a){let i=Promise.resolve();function r(l){const c=new Event("vite:preloadError",{cancelable:!0});if(c.payload=l,window.dispatchEvent(c),!c.defaultPrevented)throw l}return i.then(l=>{for(const c of l||[])c.status==="rejected"&&r(c.reason);return t().catch(r)})};(function(){const e=Object.defineProperty,t=globalThis,n=["RTCPeerConnection","webkitRTCPeerConnection","RTCDataChannel","RTCIceCandidate","RTCSessionDescription","RTCRtpSender","RTCRtpReceiver"];let a=0;for(let i=0;i<n.length;i++){const r=n[i];try{e(t,r,{value:void 0,writable:!1,configurable:!1})}catch{try{delete t[r]}catch{}try{e(t,r,{value:void 0,writable:!1,configurable:!0})}catch{}}typeof t[r]=="function"&&a++}if(a&&window!==top)try{parent.postMessage({__frame_rtc_lockdown_failed:a},"*")}catch{}})();var qe=1e4,Ie=Object.freeze([...window.__FRAME_PREAMBLE?.origins??["https://claude.ai","https://preview.claude.ai"]]);function re(e){for(const t of Ie)if(t.endsWith(":*"))try{const n=new URL(e);if(`${n.protocol}//${n.hostname}:*`===t)return!0}catch{}else if(e===t)return!0;return!1}var k=Object.freeze({...window.__FRAME_PREAMBLE?.capabilities}),x=window.__FRAME_PREAMBLE?.transforms,$=window.__FRAME_PREAMBLE?.comments,z=window.__FRAME_PREAMBLE?.translate,q=/^[\w.-]+\.js$/,De=/^[a-z][a-z0-9_-]{0,63}$/;function I(e){return Ue(()=>import("/_runtime/"+e),void 0)}function Be(e,t){return{contract:e.contract,changes:new Set(e.changes??[]),flags:new Set(e.flags??[]),capabilities:e.capabilities??{},capBudgets:e.capBudgets??{},transforms:new Map,shellOrigin:t,mount:Y,pipe:()=>({wrap:(n,a)=>(...i)=>{try{return a(...i)}catch(r){return Promise.reject(r)}}})}}var ne=null,C=null;function F(e,t,n){try{Object.defineProperty(e,t,{value:n,writable:!1,configurable:!1,enumerable:!0})}catch{try{Object.defineProperty(e,t,{value:n,writable:!1,configurable:!0,enumerable:!0})}catch{}}}var H=!1;function xe(e,t){const n=[];for(const a of e.elements){const i=document.querySelector(`[data-id="${a.target}"]`);if(!i){parent.postMessage({__frame_patch_miss:{seq:e.seq}},t);return}if([...Object.keys(a.attrsSet??{}),...a.attrsRemoved??[]].some(r=>!de(r))){parent.postMessage({__frame_patch_miss:{seq:e.seq}},t);return}if(a.text!==void 0&&!ve(i)){parent.postMessage({__frame_patch_miss:{seq:e.seq}},t);return}for(const[r,l]of Object.entries(a.attrsSet??{}))if(!oe(i,r)){try{i.setAttribute(r,l)}catch{}se(i,r,l)}for(const r of a.attrsRemoved??[])oe(i,r)||(i.removeAttribute(r),se(i,r,null));typeof a.text=="string"&&(i.textContent=a.text),n.push(a.target)}try{document.dispatchEvent(new CustomEvent("claude:edit",{detail:{seq:e.seq,targets:n}}))}catch{}}function se(e,t,n){if(!(e instanceof HTMLInputElement))return;const a=t.toLowerCase();a==="checked"?e.checked=n!==null:a==="value"&&e.type!=="file"&&(e.value=n??"")}function oe(e,t){const n=t.toLowerCase(),a=e;return n==="data-id"||(n==="value"||n==="checked")&&(a.__artifactSecret===!0||/^(password|hidden|file)$/.test(a.type??"")||/(^|\s)(cc-|one-time-code|current-password|new-password)/i.test(`${e.getAttribute("autocomplete")??""} ${a.autocomplete??""}`))}function ae(e){const t=document.documentElement;e==="light"||e==="dark"?(t.dataset.theme=e,t.style.colorScheme=e,H=!0):H&&(delete t.dataset.theme,t.style.colorScheme="",H=!1)}var ie=256,N=Object.assign(Object.create(null),{mcp:Object.assign(Object.create(null),{watchTool:{handlerArg:3}}),db:Object.assign(Object.create(null),{subscribe:{handlerArg:1,errArg:2}}),room:Object.assign(Object.create(null),{on:{handlerArg:1,errArg:2},onPeers:{handlerArg:0,errArg:1},onConnection:{handlerArg:0,errArg:1}})}),$e=Object.assign(Object.create(null),{db:(e,t)=>Oe(e,t),room:(e,t,n)=>Te(e,n)}),j=new Map;function Y(e,t){const n=j.get(e);if(!n)return;const a=Object.assign(Object.create(null),t);Object.assign(n.impl,a),n.r(n.ns),n.impl.__settled=()=>Promise.reject({code:"capability_removed",message:`${e}: method not in this runtime`});const i=n.queue;n.queue=[];for(const r of i){const l=a[r.method];if(l)if(N[e]?.[r.method])try{r.resolve(l(...r.args))}catch{U(r,N[e][r.method],{code:"transform_error",message:`${e}.${r.method} rejected its arguments`})}else l(...r.args).then(r.resolve,r.reject);else{const c={code:"capability_removed",message:`${e}.${r.method} is not in this runtime`},d=N[e]?.[r.method];if(d){U(r,d,c);continue}r.reject(c)}}}function ze(e,t){const n=j.get(e);if(!n)return;n.impl.__settled=()=>Promise.reject(t),n.r(null);const a=n.queue;n.queue=[];for(const i of a){const r=N[e]?.[i.method];if(r){U(i,r,t);continue}i.reject(t)}}function le(e,t){if(typeof e=="function")try{return e(...t)}catch{return Object.create(null)}return Array.isArray(e)?[...e]:e!==null&&typeof e=="object"?{...e}:e}function D(e,t){const n=ee[e];if(!n){ze(e,t);return}j.get(e)?.r(null),Y(e,Object.fromEntries(Object.entries(n).map(([a,i])=>[a,(...r)=>Promise.resolve(le(i,r))])))}function U(e,t,n){if(e.syncState?.dead)return;const a=t.errArg===void 0?void 0:e.args[t.errArg],i=t.errArg===void 0?e.args[t.handlerArg]:a;typeof i=="function"&&queueMicrotask(()=>{if(!e.syncState?.dead)try{i(t.errArg===void 0?{type:"error",error:n}:n)}catch(r){we(r)}})}var W=Object.getOwnPropertyDescriptor(window,"claude");if(window!==top&&!(W&&W.writable===!1)){const e=x&&q.test(x)?I(x).catch(()=>{}):Promise.resolve(void 0),t=o=>{if(o.type==="auxclick"&&o.button!==1)return;const u=o.target,g=u&&u.closest?u.closest("a[href],area[href]"):null;if(!g)return;const f=g.getAttribute("href");if(!f)return;let p,P;try{p=new URL(f,document.baseURI),P=new URL(document.baseURI).origin}catch{return}if((p.protocol==="http:"||p.protocol==="https:")&&p.origin!==P){o.preventDefault();const w=(g.getAttribute("target")??"").toLowerCase(),y=o.type==="auxclick"||o.metaKey||o.ctrlKey||o.shiftKey||o.altKey||!["","_self","_top","_parent"].includes(w);parent.postMessage({__frame_nav:!0,url:p.href,newTab:y},"*")}};addEventListener("click",t,!0),addEventListener("auxclick",t,!0);const n={},a=o=>{o.isTrusted&&(n.pointer=!0)},i=o=>{o.isTrusted&&(n.click=!0)};addEventListener("pointermove",a,{capture:!0,passive:!0}),addEventListener("click",i,{capture:!0,passive:!0}),e.then(o=>{o?.wireNav&&(o.wireNav(),removeEventListener("click",t,!0),removeEventListener("auxclick",t,!0),removeEventListener("pointermove",a,!0),removeEventListener("click",i,!0),o.wireEngagement?.(n))});let r=null;try{r=Ne()}catch{}const l=W?.value??{};F(window,"claude",l);const c=o=>{let u;const g=new Promise(v=>{u=v}),f={impl:Object.create(null),queue:[],u:g,r:u,ns:null};j.set(o,f);const p=f.impl,P=v=>({code:"queue_overflow",message:`${o}.${v}: pre-init call queue is full`}),w=(v,s)=>{if(f.queue.length>=ie){const m=ee[o];return m&&v in m?Promise.resolve(le(m[v],s)):Promise.reject(P(v))}return new Promise((m,_)=>{f.queue.push({method:v,args:s,resolve:m,reject:_})})},y=Re[o],L=new Proxy(y===void 0?p:(()=>{}),{apply:(v,s,m)=>{const _=y,b=p[_]??p.__settled;return b?b(...m):w(_,m)},get:(v,s)=>{if(typeof s!="string"||s==="then"||s==="toJSON"||s==="valueOf")return;if(s==="toString")return Object.prototype.toString;if(y!==void 0&&(s==="call"||s==="apply"||s==="bind"))return Function.prototype[s];const m=N[o]?.[s];return m?(..._)=>{if(typeof _[m.handlerArg]!="function")throw new TypeError(`${o}.${s} requires a handler function`);const b=p[s];if(b)return b(..._);if(p.__settled){const S={dead:!1},Fe={args:[..._],syncState:S};return p.__settled().catch(He=>U(Fe,m,He)),()=>{S.dead=!0}}if(f.queue.length>=ie){const S={dead:!1};return U({args:[..._],syncState:S},m,P(s)),()=>{S.dead=!0}}let K=null;const G={dead:!1};return f.queue.push({method:s,args:_,resolve:S=>{K=typeof S=="function"?S:null,G.dead&&K?.()},reject:()=>{},syncState:G}),()=>{G.dead=!0,K?.()}}:(..._)=>{const b=p[s]??p.__settled;return b?b(..._):w(s,_)}},set:()=>!1});$e[o]?.(p,(v,s)=>L[v](...s),w),f.ns=L,F(l,o,L)};for(const o of Object.keys(k)){if(l[o]!==void 0){F(l,o,l[o]);continue}c(o)}if(l.use===void 0){const o=u=>{if(typeof u!="string"||!Object.hasOwn(k,u))return Promise.resolve(null);const g=j.get(u);return g?g.u:Promise.resolve(l[u]??null)};try{Object.defineProperty(l,"use",{value:o,writable:!0,configurable:!0,enumerable:!1})}catch{}}let d=null,E=null,T=0;const h=o=>{o.source!==parent||!re(o.origin)||ye(o.data)&&(d=o.data.__frame_init,C=o.origin,removeEventListener("message",h),clearTimeout(T),E?.())};addEventListener("message",h),parent.postMessage({__frame_connect:!0},"*");const R=new Promise(o=>{E=o,T=setTimeout(()=>{removeEventListener("message",h),o()},qe)}),A=document.readyState==="loading"?new Promise(o=>document.addEventListener("DOMContentLoaded",()=>o(),{once:!0})):Promise.resolve();A.then(()=>{try{r?.restore()}catch{}});const O={cb:null},M=o=>{if(!(o.source!==parent||!re(o.origin))&&be(o.data)){try{r?.promoted()}catch{}O.cb?.()}};addEventListener("message",M),R.then(async()=>{if(!d||!C){for(const s of j.keys())D(s,{code:"not_granted",message:"frame initialization did not arrive - capability unavailable"});return}ae(d.theme);const o=C;let u=!1,g=!1;addEventListener("message",s=>{if(s.source!==parent||s.origin!==o)return;Ee(s.data)&&ae(s.data.__frame_theme.theme),he(s.data)&&xe(s.data.__frame_patch,o);const m=s.data?.__fc_mode;m&&typeof m=="object"&&!u&&$&&q.test($)&&(u=!0,I($).then(b=>b.install?.(o,m.on===!0)).catch(()=>{}));const _=s.data?.__ft_cmd;_&&typeof _=="object"&&!g&&z&&q.test(z)&&(g=!0,I(z).then(b=>b.install?.(o,_)).catch(()=>{}))});const f=Object.keys(d.capabilities??{});for(const s of f)Object.hasOwn(k,s)||De.test(s)&&l[s]===void 0&&(c(s),D(s,{code:"capability_disabled",message:"capability not in this runtime generation"}));const p=f.filter(s=>Object.hasOwn(k,s)).map(s=>[s,k[s]]).filter(s=>typeof s[1]=="string"&&q.test(s[1])),P=await Promise.allSettled(p.map(([,s])=>I(s))),w=await e,y=C;w?.buildBoot||parent.postMessage({__frame_cap_telemetry:{kind:"cap-load-error",cap:"_transforms"}},y),ne=w?.buildBoot?w.buildBoot(d,w.TRANSFORMS??{},{shellOrigin:y,mount:Y},s=>parent.postMessage({__frame_cap_telemetry:s},y)):Be(d,y);const L=s=>parent.postMessage({__frame_cap_telemetry:{kind:"cap-load-error",cap:s}},y),v=ne;P.forEach((s,m)=>{const _=p[m][0];if(s.status!=="fulfilled"){L(_);return}try{s.value?.install?.(v)}catch{L(_)}});for(const[s,m]of j)if(m.impl.__settled===void 0){if(f.includes(s)){D(s,{code:"capability_disabled",message:"capability not available in this session"});continue}D(s,{code:"not_granted",message:"capability not available in this session"})}await A,parent.postMessage({__frame_ready:!0},C),e.then(s=>s?.installSizeReporter?.(y,O))})}})();</script><!-- /frame-runtime --><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}</style></head><body>
 <title>Context Engineering for the SDLC — Baseline Architecture</title>
 <style>
   :root {
@@ -116,14 +116,6 @@
     background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
   }
 
-  .gov-wrap {
-    margin-top: 16px; border: 1px dashed var(--border); border-radius: var(--radius); padding: 16px 20px;
-    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
-  }
-  .gov-wrap .gov-icon { font-family: ui-monospace, monospace; font-size: 20px; color: var(--text-dim); }
-  .gov-wrap .gov-title { font-family: ui-monospace, monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); font-weight: 600; margin-bottom: 4px; }
-  .gov-wrap .gov-desc { font-size: 12.5px; color: var(--text-dim); max-width: 74ch; }
-
   /* ---- Problem section ---- */
   .problem-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 36px; align-items: start; }
   .problem-grid p { font-size: 15.5px; color: var(--text-dim); }
@@ -136,7 +128,7 @@
   .cost-box li b { color: var(--text); font-weight: 600; }
 
   /* ---- Primitives intro ---- */
-  .primitives-intro { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 22px 0 4px; }
+  .primitives-intro { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 22px 0 4px; }
   .primitive-item { padding: 16px 18px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); }
   .primitive-item .k { font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-ink); font-weight: 700; margin-bottom: 8px; }
   .primitive-item p { font-size: 13.5px; color: var(--text-dim); }
@@ -182,7 +174,7 @@
   td.unlock { color: var(--text-dim); }
 
   /* ---- Roadmap ---- */
-  .roadmap { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; position: relative; }
+  .roadmap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; position: relative; }
   .phase { position: relative; padding: 0 16px 0 0; }
   .phase:not(:last-child)::after {
     content: ""; position: absolute; top: 13px; right: -6px; width: 24px; height: 1px; background: var(--border);
@@ -213,7 +205,7 @@
   .example-close { margin-top: 10px; font-size: 14px; color: var(--text); max-width: 74ch; }
 
   /* ---- Implementation ---- */
-  .impl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px; }
+  .impl-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 20px; }
   .impl-card { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); padding: 20px 20px; }
   .impl-card h3 { margin-bottom: 12px; font-size: 16px; }
   .impl-card p { font-size: 13px; color: var(--text-dim); margin-top: 10px; line-height: 1.55; }
@@ -268,13 +260,12 @@
 
   <section>
     <p class="eyebrow">02 — Architecture</p>
-    <h2>Three primitives</h2>
-    <p class="section-lede">Underneath the diagram, this is really just three moving parts. Everything else is detail.</p>
+    <h2>Two primitives</h2>
+    <p class="section-lede">Underneath the diagram, this is really just two moving parts. Everything else is detail.</p>
 
     <div class="primitives-intro">
       <div class="primitive-item"><div class="k">1 — Sources</div><p>Where the facts actually live: code, docs, the platform catalog, live tickets and CI state, production telemetry, external knowledge.</p></div>
-      <div class="primitive-item"><div class="k">2 — Gateway</div><p>The one door every agent knocks on. It decides which sources to check for a given question and hands back a single answer.</p></div>
-      <div class="primitive-item"><div class="k">3 — Trust &amp; memory</div><p>Attached to every answer: how fresh is this, who's allowed to see it, and what have agents already been corrected on before.</p></div>
+      <div class="primitive-item"><div class="k">2 — Gateway</div><p>The one door every agent knocks on. It decides which sources to check, merges the answer, checks what the caller is allowed to see, and remembers what's already been corrected — all in one place, not bolted on separately.</p></div>
     </div>
 
     <div class="diagram" style="margin-top:12px;">
@@ -294,6 +285,7 @@
           <span class="chip">retrieval &amp; ranking</span>
           <span class="chip">scoping &amp; access control</span>
           <span class="chip">freshness &amp; provenance</span>
+          <span class="chip">memory of past corrections</span>
           <span class="chip">caching &amp; cost control</span>
         </div>
       </div>
@@ -303,7 +295,7 @@
       <p class="band-label">Context Sources</p>
       <div class="row five">
         <div class="card">
-          <h3>Local / Repo</h3>
+          <h3>Codebase</h3>
           <p class="desc">Code, tests, docs, CLAUDE.md &amp; skills, ADRs, git history</p>
         </div>
         <div class="card">
@@ -324,35 +316,23 @@
           <p class="desc">Logs, traces, metrics, incidents, feature flags, prod config — "what's actually true in prod"</p>
         </div>
       </div>
-
-      <div class="gov-wrap">
-        <span class="gov-icon">↺</span>
-        <div>
-          <div class="gov-title">Trust &amp; memory</div>
-          <div class="gov-desc">Timestamps and scopes every answer the gateway returns, and remembers what agents got corrected on before — so the same mistake isn't repeated by the next agent.</div>
-        </div>
-      </div>
     </div>
 
     <div class="why-blocks">
       <div class="why-block new-src">
         <h3>Why five sources, not three</h3>
-        <p>Local, platform, and external context describe what's <em>supposed</em> to be true — the design, the standard, the contract. Two more sources describe what's <em>actually</em> true right now: process context (is this ticket done, did CI pass, is this PR blocked) and runtime context (is this actually broken in production, what do the real logs say). An agent without the second kind is reasoning from the manual, not the machine. Note the two aren't equal effort — process context is usually just wiring, since GitHub, Jira, Linear, and CI providers already ship their own MCP servers; runtime context is the one you'll actually have to build.</p>
+        <p>Codebase, platform, and external context describe what's <em>supposed</em> to be true — the design, the standard, the contract. Two more sources describe what's <em>actually</em> true right now: process context (is this ticket done, did CI pass, is this PR blocked) and runtime context (is this actually broken in production, what do the real logs say). An agent without the second kind is reasoning from the manual, not the machine. Note the two aren't equal effort — process context is usually just wiring, since GitHub, Jira, Linear, and CI providers already ship their own MCP servers; runtime context is the one you'll actually have to build.</p>
       </div>
       <div class="why-block new-src">
         <h3>Why a gateway, not five separate connections</h3>
-        <p>Without one, every agent — your IDE assistant, your CI bot, your background migration agent — ends up with its own copy of the retrieval logic, and its own bugs. Build "how to search the platform catalog" once, in the gateway, and every agent gets it for free — including the next one you add.</p>
-      </div>
-      <div class="why-block new-src">
-        <h3>Why trust &amp; memory</h3>
-        <p>Two problems only show up once agents are trusted with real work: context goes stale (a design doc from last year is confidently wrong), and some context shouldn't reach every agent (a security doc, a credential path). This layer timestamps and scopes every answer, and keeps a record of what agents got corrected on — so the correction sticks instead of being relearned every session.</p>
+        <p>Without one, every agent — your IDE assistant, your CI bot, your background migration agent — ends up with its own copy of the retrieval logic, and its own bugs. Build "how to search the platform catalog" once, in the gateway, and every agent gets it for free — including the next one you add. The gateway is also where two problems that only show up once agents are trusted with real work get handled: context going stale (a design doc from last year is confidently wrong), and context reaching an agent that shouldn't see it (a security doc, a credential path). Neither needs a separate layer — they're just more things the one door every agent already goes through has to check.</p>
       </div>
     </div>
 
     <div class="kg-panel">
       <div class="kg-panel-head">
         <h3>What the gateway actually does</h3>
-        <p>Concretely, it's an MCP server — or a router sitting in front of several MCP servers — that every agent connects to instead of connecting to each source on its own.</p>
+        <p>Concretely, it's an MCP server — or a router sitting in front of several MCP servers — that every agent connects to instead of connecting to each source on its own. It's also the one place that decides whether an answer is current, whether the caller is allowed to see it, and whether this is a mistake that's already been made before.</p>
       </div>
 
       <div class="kg-trace">
@@ -366,10 +346,17 @@
         <li><b>One place to change, not five.</b> Swap the wiki tool or add a new source and you update the gateway once — every agent picks it up automatically.</li>
         <li><b>One place for access rules.</b> Who's allowed to see what is enforced once, not reimplemented per agent — which is where the holes usually creep in.</li>
         <li><b>One place for "which answer wins."</b> When sources disagree or overlap, ranking logic lives in one spot instead of five agents each deciding differently.</li>
-        <li><b>The only chokepoint for freshness and feedback.</b> Tracking "is this stale" or "did an agent get corrected on this before" across every source only works if everything passes through one place.</li>
+        <li><b>One place that remembers.</b> Every response and whatever accept/reject signal follows it gets logged here — so when a pattern gets corrected once, the gateway stops suggesting it, for every agent, not just the one that got corrected.</li>
       </ul>
 
-      <div class="kg-note"><b>Without it:</b> you don't really have five sources — you have five × however many agents you deploy, each with its own copy of the integration and its own bugs.</div>
+      <div class="kg-trace">
+        <span class="kg-trace-label">What memory unlocks</span>
+        <div class="kg-trace-line-wrap">
+          <p class="kg-trace-line">agent proposes X → developer rejects it, ships Y instead → correction logged → next time the pattern shows up, the gateway ranks Y-style answers higher, for every agent</p>
+        </div>
+      </div>
+
+      <div class="kg-note"><b>Without it:</b> you don't really have five sources — you have five × however many agents you deploy, each with its own copy of the integration, its own access rules, and its own bugs.</div>
     </div>
 
     <div class="kg-panel">
@@ -407,7 +394,7 @@
         </div>
       </div>
 
-      <div class="kg-note"><b>Freshness is built in</b> — it comes live from the MCP source itself, so there's nothing to re-index. The thing to get right here is write-scoping: an agent that can <em>read</em> ticket and PR state shouldn't automatically be able to close a ticket or merge a PR. That boundary belongs to trust &amp; memory, not the source.</div>
+      <div class="kg-note"><b>Freshness is built in</b> — it comes live from the MCP source itself, so there's nothing to re-index. The thing to get right here is write-scoping: an agent that can <em>read</em> ticket and PR state shouldn't automatically be able to close a ticket or merge a PR. That boundary belongs to the gateway, not the source.</div>
     </div>
 
     <div class="kg-panel">
@@ -445,7 +432,7 @@
         </div>
       </div>
 
-      <div class="kg-note"><b>The risk here isn't staleness, it's exposure.</b> Raw logs and traces often carry PII or secrets, so this is the source that needs the trust &amp; memory layer's redaction and scoping most, before any of it reaches an agent.</div>
+      <div class="kg-note"><b>The risk here isn't staleness, it's exposure.</b> Raw logs and traces often carry PII or secrets, so this is the source that needs the gateway's redaction and scoping most, before any of it reaches an agent.</div>
     </div>
 
     <div class="kg-panel">
@@ -487,44 +474,7 @@
         <p class="kg-trace-note">A doc search can tell you what a library does. Only a graph can answer "am I exposed" — by walking from what you use, to what it depends on, to what's wrong with that — three hops that never sit in the same document. That's the query an agent needs to run before it bumps a dependency, not after.</p>
       </div>
 
-      <div class="kg-note"><b>Kept fresh by:</b> subscribing to package-registry advisories, the CVE/NVD feed, and vendor changelogs — not a one-time scrape. It's the fastest-changing source in the whole setup, which is exactly why it leans hardest on the trust &amp; memory layer's freshness tagging.</div>
-    </div>
-
-    <div class="kg-panel">
-      <div class="kg-panel-head">
-        <h3>What's actually in trust &amp; memory</h3>
-        <p>Not a source — a layer wrapped around all five of them. It's what keeps the whole setup honest past day one, instead of quietly going stale as your real system moves past its own documentation.</p>
-      </div>
-
-      <div class="kg-cols">
-        <div class="kg-col">
-          <div class="kg-col-title">What it enforces</div>
-          <div class="chip-row">
-            <span class="chip">scoping &amp; access control</span>
-            <span class="chip">freshness / staleness flags</span>
-            <span class="chip">provenance &amp; trust score</span>
-            <span class="chip">secrets &amp; PII redaction</span>
-          </div>
-        </div>
-        <div class="kg-col">
-          <div class="kg-col-title">What it remembers</div>
-          <div class="chip-row">
-            <span class="chip">accept / reject signals</span>
-            <span class="chip">review outcomes</span>
-            <span class="chip">repeated corrections</span>
-            <span class="chip">postmortem lessons</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="kg-trace">
-        <span class="kg-trace-label">What it unlocks</span>
-        <div class="kg-trace-line-wrap">
-          <p class="kg-trace-line">agent proposes X → developer rejects it, ships Y instead → correction logged → next time the pattern shows up, the gateway ranks Y-style answers higher, for every agent</p>
-        </div>
-      </div>
-
-      <div class="kg-note"><b>Why it's last, not optional:</b> the other four primitives make the system accurate on day one. This is the only one that makes it get better over time instead of slowly drifting wrong.</div>
+      <div class="kg-note"><b>Kept fresh by:</b> subscribing to package-registry advisories, the CVE/NVD feed, and vendor changelogs — not a one-time scrape. It's the fastest-changing source in the whole setup, which is exactly why it leans hardest on the gateway's freshness tagging.</div>
     </div>
   </section>
 
@@ -540,12 +490,12 @@
         </thead>
         <tbody>
           <tr><td class="stage">Plan &amp; design</td><td class="pillars">platform · external</td><td class="unlock">Agent drafts designs against the real capability catalog, flags duplicate build, cites existing services instead of proposing new ones.</td></tr>
-          <tr><td class="stage">Code</td><td class="pillars">local · platform</td><td class="unlock">Generated code follows repo conventions and platform golden paths without being told — fewer review round-trips on style and standards.</td></tr>
-          <tr><td class="stage">Review</td><td class="pillars">local · process · trust</td><td class="unlock">PR bots check diffs against standards and ticket acceptance criteria, and route to the right owner automatically.</td></tr>
-          <tr><td class="stage">Test</td><td class="pillars">local · runtime</td><td class="unlock">Tests are generated against real production edge cases and past incidents, not just the happy path in the spec.</td></tr>
+          <tr><td class="stage">Code</td><td class="pillars">codebase · platform</td><td class="unlock">Generated code follows repo conventions and platform golden paths without being told — fewer review round-trips on style and standards.</td></tr>
+          <tr><td class="stage">Review</td><td class="pillars">codebase · process</td><td class="unlock">PR bots check diffs against standards and ticket acceptance criteria, and route to the right owner automatically.</td></tr>
+          <tr><td class="stage">Test</td><td class="pillars">codebase · runtime</td><td class="unlock">Tests are generated against real production edge cases and past incidents, not just the happy path in the spec.</td></tr>
           <tr><td class="stage">Deploy &amp; release</td><td class="pillars">platform · process</td><td class="unlock">A release-gate agent checks the change against the live dependency graph and policy before promotion, not after an incident.</td></tr>
           <tr><td class="stage">Operate &amp; respond</td><td class="pillars">runtime · external</td><td class="unlock">A remediation agent correlates the failing trace against the knowledge base and opens a fix PR — cutting time-to-patch, not just time-to-answer.</td></tr>
-          <tr><td class="stage">Feedback</td><td class="pillars">trust &amp; memory</td><td class="unlock">Accept/reject signals and postmortems flow back into the corpus, so the next Plan stage starts smarter than the last.</td></tr>
+          <tr><td class="stage">Feedback</td><td class="pillars">gateway memory</td><td class="unlock">Accept/reject signals and postmortems flow back into the corpus, so the next Plan stage starts smarter than the last.</td></tr>
         </tbody>
       </table>
     </div>
@@ -554,7 +504,7 @@
   <section>
     <p class="eyebrow">04 — Rollout</p>
     <h2>Building it in order</h2>
-    <p class="section-lede">Five sources and a trust layer is too much to build at once. Each step below has a plain test for "is this actually done" — build the next step only once you can pass the last one.</p>
+    <p class="section-lede">Five sources and a gateway is too much to build at once. Each step below has a plain test for "is this actually done" — build the next step only once you can pass the last one.</p>
 
     <div class="roadmap">
       <div class="phase">
@@ -566,8 +516,8 @@
       <div class="phase">
         <div class="n">2</div>
         <h3>Put a gateway in front</h3>
-        <p class="does">Give every agent one address to call instead of three-plus. The gateway decides where to look.</p>
-        <div class="done-when"><span class="k">Done when</span><p>Swapping or adding a source doesn't require touching every agent's config, just the gateway.</p></div>
+        <p class="does">Give every agent one address to call instead of three-plus. The gateway decides where to look, checks what the caller is allowed to see, and merges the answer.</p>
+        <div class="done-when"><span class="k">Done when</span><p>Swapping or adding a source doesn't require touching every agent's config — and the gateway can already tell you which agent is allowed to query what.</p></div>
       </div>
       <div class="phase">
         <div class="n">3</div>
@@ -581,12 +531,6 @@
         <p class="does">Wrap your observability stack — logs, traces, metrics, incidents. This is the source that rarely ships an agent-ready MCP server, so it's the real engineering effort in the whole rollout.</p>
         <div class="done-when"><span class="k">Done when</span><p>An agent can tell the difference between "the docs say X" and "X is true in prod right now."</p></div>
       </div>
-      <div class="phase">
-        <div class="n">5</div>
-        <h3>Turn on trust &amp; memory</h3>
-        <p class="does">Scope what each agent can see, timestamp every answer, and log every accept/reject on agent output.</p>
-        <div class="done-when"><span class="k">Done when</span><p>A mistake an agent got corrected on doesn't happen again from that same agent.</p></div>
-      </div>
     </div>
   </section>
 
@@ -599,17 +543,12 @@
       <div class="impl-card">
         <h3>Sources</h3>
         <p><b>Build it as:</b> each source gets its own small MCP server — a thin wrapper that turns "search the platform catalog" into a tool an agent can call.</p>
-        <p><b>Start with:</b> local needs almost nothing — Claude Code already reads the repo. Platform is a wrapper over your service catalog's existing API. Process is mostly installing MCP servers that already exist (GitHub, Jira, CI). Runtime is a redacted, read-only wrapper over your observability API. External knowledge starts as a simple table — library, version, known issue, source — not a graph database on day one.</p>
+        <p><b>Start with:</b> codebase needs almost nothing — Claude Code already reads the repo. Platform is a wrapper over your service catalog's existing API. Process is mostly installing MCP servers that already exist (GitHub, Jira, CI). Runtime is a redacted, read-only wrapper over your observability API. External knowledge starts as a simple table — library, version, known issue, source — not a graph database on day one.</p>
       </div>
       <div class="impl-card">
         <h3>Gateway</h3>
-        <p><b>Build it as:</b> one more MCP server, whose tools call out to the source servers and merge the results. Agents only ever talk to this one.</p>
-        <p><b>Start with:</b> simple rule-based routing — which tool name or keyword matches which source — is enough at first. You don't need a ranking model until sources actually disagree often enough to justify one.</p>
-      </div>
-      <div class="impl-card">
-        <h3>Trust &amp; memory</h3>
-        <p><b>Build it as:</b> two things bolted onto the gateway, not a separate system — a scoping check on every request, and a log of every response plus whatever accept/reject signal you can capture.</p>
-        <p><b>Start with:</b> a table of {source, last-verified-at} for freshness, and a log of {query, response, accepted, correction} for memory. Enough to notice "this pattern got rejected three times" without a fancy re-ranker.</p>
+        <p><b>Build it as:</b> one more MCP server, whose tools call out to the source servers, merge the results, check what the calling agent is allowed to see, and log what happened. Agents only ever talk to this one.</p>
+        <p><b>Start with:</b> simple rule-based routing — which tool name or keyword matches which source — is enough at first; you don't need a ranking model until sources actually disagree often enough to justify one. For access, a table of {agent, allowed sources} is enough. For memory, a log of {query, response, accepted, correction} — enough to notice "this pattern got rejected three times" without a fancy re-ranker.</p>
       </div>
     </div>
 
@@ -619,7 +558,7 @@
   <section>
     <p class="eyebrow">06 — Example</p>
     <h2>One bug fix, with and without context</h2>
-    <p class="section-lede">Same ticket, same agent, same team — two different context setups. This is the actual difference the three primitives buy you.</p>
+    <p class="section-lede">Same ticket, same agent, same team — two different context setups. This is the actual difference the two primitives buy you.</p>
 
     <div class="kg-trace" style="margin-top:0; padding-top:0; border-top:none;">
       <span class="kg-trace-label">The ticket</span>
@@ -641,7 +580,7 @@
       <div class="compare-card good">
         <div class="compare-head">With context</div>
         <ol class="compare-list">
-          <li><b>Local</b>Agent follows repo conventions, extends the existing test file on the first try.</li>
+          <li><b>Codebase</b>Agent follows repo conventions, extends the existing test file on the first try.</li>
           <li><b>Platform</b>Agent checks the capability catalog, finds the discount logic actually lives in the shared pricing service.</li>
           <li><b>Platform</b>Agent checks the dependency graph, finds the other caller, and adds a regression test for it before opening the PR.</li>
           <li><b>Process</b>PR description is generated straight from the ticket's acceptance criteria. Reviewer approves on the first pass.</li>
@@ -661,12 +600,12 @@
       </table>
     </div>
 
-    <p class="example-close">Every line in the "with context" column traces back to one of the three primitives — a source the agent could query, the gateway that routed the question to the right one, or a correction trust &amp; memory had already logged.</p>
+    <p class="example-close">Every line in the "with context" column traces back to one of the two primitives — a source the agent could query, or the gateway that routed the question, checked it was allowed to answer, and already knew about the correction.</p>
     <p class="example-note">Illustrative, not measured. Once the baseline is live, these are exactly the numbers the "done when" checks in the rollout above are there to let you track for real.</p>
   </section>
 
   <footer>
-    Baseline context setup — five sources, one gateway, one trust &amp; memory layer. Built to extend: new sources register with the gateway, not with every agent.
+    Baseline context setup — five sources, one gateway. Built to extend: new sources register with the gateway, not with every agent.
   </footer>
 
 </div>
