@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>{{.Tenant}} · Web Runtime</title>
+<link rel="stylesheet" href="/static/runtime.css">
+</head>
+<body>
+<header class="wr-header">
+  <span class="wr-logo">Web Runtime</span>
+  <span id="slot-badge" class="wr-badge"></span>
+</header>
+<nav id="app-nav" class="wr-nav"></nav>
+<main id="experience-root" class="wr-main"></main>
+
+<!--
+  __PLATFORM_STATE__ is injected server-side by the Web Runtime Service
+  (RFC goal G2: "server renders index.html with all boot data injected;
+  zero extra round trips before render"). The browser Web Runtime shell
+  (/static/runtime.js) reads this directly — no API call needed to know
+  the nav, the manifest, or the caller's identity.
+-->
+<script>window.__PLATFORM_STATE__ = {{.StateJSON}};</script>
+<script type="module" src="/static/runtime.js"></script>
+</body>
+</html>

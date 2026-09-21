@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "tenantId": "wealth-dashboard",
+  "env": "production",
+  "runtime": { "version": "1.7.0", "upgradePolicy": "auto-patch" },
+  "shell": {
+    "header": { "logo": "https://cdaas.example/logo-wealth.svg", "height": 56 },
+    "nav": [
+      {
+        "id": "dashboard",
+        "label": "Dashboard",
+        "icon": "chart",
+        "path": "/dashboard",
+        "default": true,
+        "permission": null,
+        "experience": {
+          "type": "module-federation",
+          "remote": "http://localhost:8092/dashboard/App.js",
+          "scope": "dashboard",
+          "module": "./App",
+          "moduleVersion": "1.0.0",
+          "deployedAt": "2026-09-20T01:00:00Z"
+        }
+      }
+    ],
+    "auth": { "required": true, "roles": ["wealth-user"] }
+  }
+}

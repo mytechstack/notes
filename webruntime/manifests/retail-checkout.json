@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "tenantId": "retail-checkout",
+  "env": "production",
+  "runtime": { "version": "1.7.0", "upgradePolicy": "auto-patch" },
+  "shell": {
+    "header": { "logo": "https://cdaas.example/logo.svg", "height": 56 },
+    "nav": [
+      {
+        "id": "overview",
+        "label": "Overview",
+        "icon": "home",
+        "path": "/overview",
+        "default": true,
+        "permission": null,
+        "experience": {
+          "type": "module-federation",
+          "remote": "http://localhost:8092/overview/App.js",
+          "scope": "overview",
+          "module": "./App",
+          "moduleVersion": "3.1.2",
+          "deployedAt": "2026-09-20T01:00:00Z"
+        }
+      }
+    ],
+    "auth": { "required": true, "roles": ["checkout-user"] }
+  }
+}

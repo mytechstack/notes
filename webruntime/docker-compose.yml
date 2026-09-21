@@ -1,0 +1,47 @@
+services:
+  wrcs:
+    build: ./services/wrcs
+    ports:
+      - "8091:8091"
+    environment:
+      - PORT=8091
+      - DATA_DIR=/data
+      - SEED_DIR=/seed
+      - WEBHOOK_URLS=http://web-runtime-service:8080/internal/cache-invalidate
+    volumes:
+      - wrcs-data:/data
+      - ./manifests:/seed:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8091/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  oidc-shell:
+    build: ./services/oidc-shell
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - JWT_SECRET=demo-secret-change-me
+      - WRS_PUBLIC_URL=http://localhost:8080
+
+  web-runtime-service:
+    build: ./services/web-runtime-service
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - JWT_SECRET=demo-secret-change-me
+      - WRCS_BASE_URL=http://wrcs:8091
+    depends_on:
+      wrcs:
+        condition: service_healthy
+
+  cdaas-mock:
+    build: ./services/cdaas-mock
+    ports:
+      - "8092:80"
+
+volumes:
+  wrcs-data:
