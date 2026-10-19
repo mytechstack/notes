@@ -1,0 +1,13 @@
+{
+  "identities": [
+    {
+      "name": "anonymous",
+      "actions": ["Read"]
+    },
+    {
+      "name": "wcr",
+      "credentials": [{ "accessKey": "wcr-access-key", "secretKey": "wcr-secret-key" }],
+      "actions": ["Admin", "Read", "List", "Tagging", "Write"]
+    }
+  ]
+}

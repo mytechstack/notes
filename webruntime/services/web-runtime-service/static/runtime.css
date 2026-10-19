@@ -1,18 +1,27 @@
 * { box-sizing: border-box; }
+/* Theme: --wr-primary and --wr-header-bg come from the tenant's frame
+   settings (set on <body> by the server); these are the defaults. */
+:root { --wr-primary: #1a1a2e; --wr-header-bg: #1a1a2e; }
 body {
   font-family: system-ui, sans-serif;
   margin: 0;
   color: #1a1a2e;
   background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 .wr-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   padding: 14px 20px;
-  background: #1a1a2e;
+  background: var(--wr-header-bg);
   color: #fff;
 }
+.wr-header img.wr-logo-img { height: 26px; width: auto; display: block; }
+.wr-brand { display: flex; align-items: center; gap: 10px; }
 .wr-logo { font-weight: 600; }
 .wr-badge {
   font-size: 0.8rem;
@@ -20,22 +29,60 @@ body {
   border-radius: 999px;
   background: #3d3d5c;
 }
+.wr-badge[data-selected-by="canary"] { background: #b45309; }
+.wr-badge[data-selected-by="preview"] { background: #6d28d9; }
+.wr-layout {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+}
 .wr-nav {
   display: flex;
-  gap: 4px;
-  padding: 10px 16px;
+  flex: 0 0 220px;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 12px;
   background: #fff;
-  border-bottom: 1px solid #e2e2ea;
+  border-right: 1px solid #e2e2ea;
 }
 .wr-nav a {
-  padding: 8px 14px;
+  padding: 10px 14px;
   border-radius: 6px;
   color: #1a1a2e;
   text-decoration: none;
   font-size: 0.92rem;
 }
-.wr-nav a.active { background: #1a1a2e; color: #fff; }
-.wr-main { padding: 32px 20px; max-width: 720px; margin: 0 auto; }
+.wr-nav a.active { background: var(--wr-primary); color: #fff; }
+.wr-nav a:focus-visible { outline: 2px solid var(--wr-primary); outline-offset: 2px; }
+.wr-nav .wr-icon { display: inline-block; width: 1.4em; text-align: center; opacity: 0.8; }
+
+/* Top navigation (frame-nav setting position: top) */
+.wr-nav-top .wr-layout { flex-direction: column; }
+.wr-nav-top .wr-nav {
+  flex: 0 0 auto;
+  flex-direction: row;
+  flex-wrap: wrap;
+  padding: 8px 16px;
+  border-right: 0;
+  border-bottom: 1px solid #e2e2ea;
+}
+.wr-nav-top .wr-main { width: 100%; }
+
+.wr-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  padding: 14px 20px;
+  border-top: 1px solid #e2e2ea;
+  background: #fff;
+  color: #555;
+  font-size: 0.85rem;
+}
+.wr-footer a { color: var(--wr-primary); text-decoration: none; }
+.wr-footer a:hover { text-decoration: underline; }
+.wr-footer .wr-footer-text { margin-right: auto; }
+.wr-main { flex: 1; padding: 32px 28px; max-width: 1040px; margin: 0 auto; }
 .experience-card {
   background: #fff;
   border: 1px solid #e2e2ea;
@@ -50,3 +97,67 @@ body {
 }
 p.loading, p.error { color: #555; }
 p.error { color: #a13d3d; }
+
+/* Home dashboard: KPI cards + widget grid */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.kpi-card {
+  background: #fff;
+  border: 1px solid #e2e2ea;
+  border-radius: 10px;
+  padding: 20px;
+}
+.kpi-card .kpi-label { font-size: 0.85rem; color: #555; }
+.kpi-card .kpi-amount { font-size: 1.6rem; font-weight: 600; margin: 4px 0; }
+.kpi-card .kpi-trend { font-size: 0.85rem; }
+.kpi-card .kpi-trend.up { color: #1a7a4c; }
+.kpi-card .kpi-trend.down { color: #a13d3d; }
+.widget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.widget-card {
+  background: #fff;
+  border: 1px solid #e2e2ea;
+  border-radius: 10px;
+  padding: 20px;
+}
+.widget-card h3 { margin: 0 0 12px; font-size: 1rem; }
+.widget-card ul { list-style: none; margin: 0; padding: 0; }
+.widget-card li {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid #f0f0f4;
+  font-size: 0.92rem;
+}
+.widget-card li:last-child { border-bottom: none; }
+.widget-card .amount.negative { color: #a13d3d; }
+.widget-card .amount.positive { color: #1a7a4c; }
+.widget-card .txn-meta { color: #888; font-size: 0.8rem; }
+.burn-bar-track {
+  background: #f0f0f4;
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+  margin: 10px 0 8px;
+}
+.burn-bar-fill {
+  background: #1a1a2e;
+  height: 100%;
+  border-radius: 999px;
+}
+.burn-bar-label { font-size: 0.85rem; color: #555; }
+.kpi-card .kpi-new {
+  font-size: 0.68rem;
+  background: #ede9fe;
+  color: #6d28d9;
+  border-radius: 999px;
+  padding: 1px 7px;
+  margin-left: 4px;
+}

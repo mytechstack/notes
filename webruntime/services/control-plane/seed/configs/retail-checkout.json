@@ -1,0 +1,18 @@
+{
+  "tenantId": "retail-checkout",
+  "displayName": "Retail Checkout",
+  "runtimeVersion": "1.7.0",
+  "roles": [
+    "checkout-user"
+  ],
+  "pages": [
+    {
+      "id": "overview",
+      "label": "Overview",
+      "icon": "home",
+      "default": true,
+      "module": "overview",
+      "moduleVersion": "3.1.2"
+    }
+  ]
+}

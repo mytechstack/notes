@@ -1,0 +1,12 @@
+{
+  "description": "Starter: just the home dashboard",
+  "pages": [
+    {
+      "id": "home",
+      "label": "Home",
+      "icon": "home",
+      "default": true,
+      "module": "home"
+    }
+  ]
+}

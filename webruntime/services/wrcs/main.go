@@ -7,22 +7,23 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 )
 
-// Web Runtime Config Service (WRCS)
+// Web Composition Registry (WCR; service name wrcs)
 //
-// Stores versioned manifests per tenant per env. Every publish creates a new
-// immutable version. "stable" and "candidate" are pointers to a version
-// number (blue-green slots), so promotion/rollback are pointer swaps, not
-// data copies. On publish/promote/rollback, WRCS notifies registered
-// webhooks so the Web Runtime Service can drop its cache without a restart.
+// Generates ONE environment-agnostic manifest per config revision
+// (events.go, generate.go) and stores it as an immutable version in S3
+// (store.go). Each environment (dev, sit, perf, uat, prod) has its own
+// pointer: stable, candidate, canary. A version reaches an environment only
+// by promotion from the previous one (envs.go), so the file UAT signed off
+// is the file prod runs. WCR is not on the request path: the Web Runtime
+// Service reads S3 directly and is pinged after every pointer change.
 
-var requiredTopLevel = []string{"version", "tenantId", "env", "runtime", "shell"}
+var requiredTopLevel = []string{"version", "tenantId", "runtime", "shell"}
 
 func validateManifest(data []byte) (map[string]interface{}, []string, error) {
 	var m map[string]interface{}
@@ -86,43 +87,35 @@ func emitWebhooks(tenant, env, slot string, version int) {
 	}
 }
 
-func publishHandler(w http.ResponseWriter, r *http.Request) {
-	tenant, env := r.PathValue("tenant"), r.PathValue("env")
-	body := new(bytes.Buffer)
-	if _, err := body.ReadFrom(r.Body); err != nil {
-		writeErr(w, 400, "failed to read body", nil)
-		return
+func validTenant(w http.ResponseWriter, tenant string) bool {
+	if !slugRe.MatchString(tenant) {
+		writeErr(w, 400, "invalid tenant", nil)
+		return false
 	}
-	_, missing, err := validateManifest(body.Bytes())
-	if err != nil {
-		writeErr(w, 400, "invalid json", nil)
-		return
-	}
-	if len(missing) > 0 {
-		writeErr(w, 400, "manifest failed schema validation", map[string]interface{}{"missingFields": missing})
-		return
-	}
-	version, err := nextVersion(tenant, env)
-	if err != nil {
-		writeErr(w, 500, err.Error(), nil)
-		return
-	}
-	if err := writeVersion(tenant, env, version, body.Bytes()); err != nil {
-		writeErr(w, 500, err.Error(), nil)
-		return
-	}
-	p, _ := readPointers(tenant, env)
-	p.Candidate = version
-	if err := writePointers(tenant, env, p); err != nil {
-		writeErr(w, 500, err.Error(), nil)
-		return
-	}
-	emitWebhooks(tenant, env, "candidate", version)
-	writeJSON(w, 201, map[string]interface{}{"version": version, "slot": "candidate"})
+	return true
 }
 
+func validTenantEnv(w http.ResponseWriter, tenant, env string) bool {
+	if !validTenant(w, tenant) {
+		return false
+	}
+	if !validEnv(env) {
+		writeErr(w, 404, fmt.Sprintf("unknown environment %q (have %v)", env, environments), nil)
+		return false
+	}
+	return true
+}
+
+// ---- per-environment pointer actions ----
+
+// promoteHandler: within ONE environment, candidate becomes stable.
 func promoteHandler(w http.ResponseWriter, r *http.Request) {
 	tenant, env := r.PathValue("tenant"), r.PathValue("env")
+	if !validTenantEnv(w, tenant, env) {
+		return
+	}
+	writeMu.Lock()
+	defer writeMu.Unlock()
 	p, err := readPointers(tenant, env)
 	if err != nil {
 		writeErr(w, 500, err.Error(), nil)
@@ -133,16 +126,67 @@ func promoteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p.Stable = p.Candidate
+	p.Canary = Canary{}
 	if err := writePointers(tenant, env, p); err != nil {
 		writeErr(w, 500, err.Error(), nil)
 		return
 	}
+	_ = recordRelease(tenant, p.Stable, env, "stable")
 	emitWebhooks(tenant, env, "stable", p.Stable)
-	writeJSON(w, 200, map[string]interface{}{"version": p.Stable, "slot": "stable"})
+	writeJSON(w, 200, map[string]interface{}{"env": env, "version": p.Stable, "slot": "stable"})
 }
 
+// canaryHandler sends `percent` of this environment's users to its
+// candidate; 0 stops the canary. The Web Runtime Service does the split.
+func canaryHandler(w http.ResponseWriter, r *http.Request) {
+	tenant, env := r.PathValue("tenant"), r.PathValue("env")
+	if !validTenantEnv(w, tenant, env) {
+		return
+	}
+	var req struct {
+		Percent int `json:"percent"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Percent < 0 || req.Percent > 100 {
+		writeErr(w, 400, "body must be {\"percent\": 0-100}", nil)
+		return
+	}
+	writeMu.Lock()
+	defer writeMu.Unlock()
+	p, err := readPointers(tenant, env)
+	if err != nil {
+		writeErr(w, 500, err.Error(), nil)
+		return
+	}
+	if req.Percent == 0 {
+		p.Canary = Canary{}
+	} else {
+		if p.Stable == 0 {
+			writeErr(w, 409, "first release in "+env+": nothing is stable yet, so there is no one to compare against — promote the candidate to stable", nil)
+			return
+		}
+		if p.Candidate == 0 || p.Candidate == p.Stable {
+			writeErr(w, 409, "candidate is the same as stable — promote a new version into "+env+" first", nil)
+			return
+		}
+		p.Canary = Canary{Version: p.Candidate, Percent: req.Percent}
+	}
+	if err := writePointers(tenant, env, p); err != nil {
+		writeErr(w, 500, err.Error(), nil)
+		return
+	}
+	emitWebhooks(tenant, env, "canary", p.Canary.Version)
+	writeJSON(w, 200, p)
+}
+
+// rollbackHandler points a slot of ONE environment at any existing version.
+// Pointing stable at an older version is the instant rollback.
 func rollbackHandler(w http.ResponseWriter, r *http.Request) {
 	tenant, env := r.PathValue("tenant"), r.PathValue("env")
+	if !validTenantEnv(w, tenant, env) {
+		return
+	}
+	writeMu.Lock()
+	defer writeMu.Unlock()
 	var req struct {
 		Version int    `json:"version"`
 		Slot    string `json:"slot"`
@@ -158,13 +202,18 @@ func rollbackHandler(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, "slot must be stable or candidate", nil)
 		return
 	}
-	if _, err := readVersion(tenant, env, req.Version); err != nil {
+	if _, err := readVersion(tenant, req.Version); err != nil {
 		writeErr(w, 404, fmt.Sprintf("version %d not found", req.Version), nil)
 		return
 	}
-	p, _ := readPointers(tenant, env)
+	p, err := readPointers(tenant, env)
+	if err != nil {
+		writeErr(w, 500, err.Error(), nil)
+		return
+	}
 	if req.Slot == "stable" {
 		p.Stable = req.Version
+		p.Canary = Canary{} // a rollback always ends any running canary
 	} else {
 		p.Candidate = req.Version
 	}
@@ -172,26 +221,94 @@ func rollbackHandler(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, err.Error(), nil)
 		return
 	}
+	_ = recordRelease(tenant, req.Version, env, req.Slot)
 	emitWebhooks(tenant, env, req.Slot, req.Version)
-	writeJSON(w, 200, map[string]interface{}{"version": req.Version, "slot": req.Slot})
+	writeJSON(w, 200, map[string]interface{}{"env": env, "version": req.Version, "slot": req.Slot})
 }
+
+// ---- cross-environment promotion ----
+
+// promoteAcrossHandler moves a version to the NEXT environment's candidate
+// slot. Gate: `to` must directly follow `from`, and the version must have
+// been stable in `from` (per its release record).
+func promoteAcrossHandler(w http.ResponseWriter, r *http.Request) {
+	tenant := r.PathValue("tenant")
+	if !validTenant(w, tenant) {
+		return
+	}
+	var req struct {
+		Version int    `json:"version"`
+		From    string `json:"from"`
+		To      string `json:"to"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Version < 1 || !validEnv(req.From) || !validEnv(req.To) {
+		writeErr(w, 400, fmt.Sprintf("body must be {\"version\": n, \"from\": env, \"to\": env} with envs from %v", environments), nil)
+		return
+	}
+	if next := nextEnv(req.From); next != req.To {
+		msg := fmt.Sprintf("%s → %s is not allowed: versions move one environment at a time, and %s comes next after %s",
+			req.From, req.To, next, req.From)
+		if next == "" {
+			msg = req.From + " is the last environment"
+		}
+		writeErr(w, 409, msg, map[string]interface{}{"order": environments})
+		return
+	}
+	writeMu.Lock()
+	defer writeMu.Unlock()
+	rel, err := readRelease(tenant, req.Version)
+	if err != nil {
+		writeErr(w, 500, err.Error(), nil)
+		return
+	}
+	if !contains(rel.StableIn, req.From) {
+		writeErr(w, 409, fmt.Sprintf("v%d has not been stable in %s yet — promote it to stable there first", req.Version, req.From),
+			map[string]interface{}{"stableIn": rel.StableIn})
+		return
+	}
+	p, err := readPointers(tenant, req.To)
+	if err != nil {
+		writeErr(w, 500, err.Error(), nil)
+		return
+	}
+	p.Candidate = req.Version
+	if p.Canary.Percent > 0 && p.Canary.Version != req.Version {
+		p.Canary = Canary{} // a canary of an older candidate no longer applies
+	}
+	if err := writePointers(tenant, req.To, p); err != nil {
+		writeErr(w, 500, err.Error(), nil)
+		return
+	}
+	_ = recordRelease(tenant, req.Version, req.To, "promoted-from-"+req.From)
+	emitWebhooks(tenant, req.To, "candidate", req.Version)
+	writeJSON(w, 200, map[string]interface{}{"version": req.Version, "env": req.To, "slot": "candidate"})
+}
+
+// ---- reads ----
 
 func getManifestHandler(w http.ResponseWriter, r *http.Request) {
 	tenant, env, slot := r.PathValue("tenant"), r.PathValue("env"), r.PathValue("slot")
+	if !validTenantEnv(w, tenant, env) {
+		return
+	}
 	if slot != "stable" && slot != "candidate" {
 		writeErr(w, 400, "slot must be stable or candidate", nil)
 		return
 	}
-	p, _ := readPointers(tenant, env)
+	p, err := readPointers(tenant, env)
+	if err != nil {
+		writeErr(w, 500, err.Error(), nil)
+		return
+	}
 	version := p.Stable
 	if slot == "candidate" {
 		version = p.Candidate
 	}
 	if version == 0 {
-		writeErr(w, 404, fmt.Sprintf("no manifest published for tenant=%s env=%s slot=%s", tenant, env, slot), nil)
+		writeErr(w, 404, fmt.Sprintf("nothing deployed for tenant=%s env=%s slot=%s", tenant, env, slot), nil)
 		return
 	}
-	data, err := readVersion(tenant, env, version)
+	data, err := readVersion(tenant, version)
 	if err != nil {
 		writeErr(w, 500, err.Error(), nil)
 		return
@@ -201,29 +318,71 @@ func getManifestHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+func listTenantsHandler(w http.ResponseWriter, r *http.Request) {
+	tenants, err := listTenants()
+	if err != nil {
+		writeErr(w, 500, err.Error(), nil)
+		return
+	}
+	writeJSON(w, 200, map[string]interface{}{"tenants": tenants, "environments": environments})
+}
+
+// listVersionsHandler: every version of a tenant with its release record,
+// plus every environment's pointer — the whole pipeline in one read.
 func listVersionsHandler(w http.ResponseWriter, r *http.Request) {
-	tenant, env := r.PathValue("tenant"), r.PathValue("env")
-	versions, err := listVersions(tenant, env)
+	tenant := r.PathValue("tenant")
+	if !validTenant(w, tenant) {
+		return
+	}
+	versions, err := listVersionEntries(tenant)
 	if err != nil {
 		writeErr(w, 500, err.Error(), nil)
 		return
 	}
 	type entry struct {
-		Version     int    `json:"version"`
-		PublishedAt string `json:"publishedAt"`
+		Version        int            `json:"version"`
+		PublishedAt    string         `json:"publishedAt"`
+		SourceRevision int            `json:"sourceRevision"`
+		StableIn       []string       `json:"stableIn"`
+		History        []HistoryEntry `json:"history"`
 	}
-	var out []entry
+	out := []entry{}
 	for _, v := range versions {
-		path := filepath.Join(versionsDir(tenant, env), fmt.Sprintf("%d.json", v))
-		info, err := os.Stat(path)
-		ts := ""
-		if err == nil {
-			ts = info.ModTime().UTC().Format(time.RFC3339)
-		}
-		out = append(out, entry{Version: v, PublishedAt: ts})
+		rel, _ := readRelease(tenant, v.N)
+		out = append(out, entry{
+			Version: v.N, PublishedAt: v.Modified.UTC().Format(time.RFC3339),
+			SourceRevision: rel.SourceRevision, StableIn: rel.StableIn, History: rel.History,
+		})
 	}
-	p, _ := readPointers(tenant, env)
-	writeJSON(w, 200, map[string]interface{}{"versions": out, "pointers": p})
+	pointers := map[string]Pointers{}
+	for _, env := range environments {
+		p, err := readPointers(tenant, env)
+		if err != nil {
+			writeErr(w, 500, err.Error(), nil)
+			return
+		}
+		pointers[env] = p
+	}
+	writeJSON(w, 200, map[string]interface{}{"environments": environments, "versions": out, "pointers": pointers})
+}
+
+func getVersionHandler(w http.ResponseWriter, r *http.Request) {
+	tenant := r.PathValue("tenant")
+	if !validTenant(w, tenant) {
+		return
+	}
+	n, err := strconv.Atoi(r.PathValue("n"))
+	if err != nil {
+		writeErr(w, 400, "version must be a number", nil)
+		return
+	}
+	data, err := readVersion(tenant, n)
+	if err != nil {
+		writeErr(w, 404, fmt.Sprintf("version %d not found", n), nil)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
 }
 
 // diffValues produces a flat list of top-level field changes between two
@@ -262,19 +421,22 @@ func diffValues(from, to map[string]interface{}) []map[string]interface{} {
 }
 
 func diffHandler(w http.ResponseWriter, r *http.Request) {
-	tenant, env := r.PathValue("tenant"), r.PathValue("env")
+	tenant := r.PathValue("tenant")
+	if !validTenant(w, tenant) {
+		return
+	}
 	fromV, err1 := strconv.Atoi(r.URL.Query().Get("from"))
 	toV, err2 := strconv.Atoi(r.URL.Query().Get("to"))
 	if err1 != nil || err2 != nil {
 		writeErr(w, 400, "from and to query params must be version numbers", nil)
 		return
 	}
-	fromData, err := readVersion(tenant, env, fromV)
+	fromData, err := readVersion(tenant, fromV)
 	if err != nil {
 		writeErr(w, 404, fmt.Sprintf("version %d not found", fromV), nil)
 		return
 	}
-	toData, err := readVersion(tenant, env, toV)
+	toData, err := readVersion(tenant, toV)
 	if err != nil {
 		writeErr(w, 404, fmt.Sprintf("version %d not found", toV), nil)
 		return
@@ -287,76 +449,50 @@ func diffHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// seedFromDisk publishes any manifest found under /seed on first boot, so
-// the demo has data without requiring a manual publish step. Only seeds a
-// tenant/env that has no versions yet (idempotent across restarts thanks to
-// the wrcs-data volume).
-func seedFromDisk() {
-	seedDir := os.Getenv("SEED_DIR")
-	if seedDir == "" {
-		seedDir = "/seed"
-	}
-	entries, err := os.ReadDir(seedDir)
-	if err != nil {
-		log.Printf("no seed dir at %s, skipping seed", seedDir)
-		return
-	}
-	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".json") {
-			continue
+// withCORS lets the control-plane UI (a separate origin/port) call this
+// API directly from the browser; JSON POSTs trigger a preflight OPTIONS.
+func withCORS(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
 		}
-		path := filepath.Join(seedDir, e.Name())
-		data, err := os.ReadFile(path)
-		if err != nil {
-			log.Printf("seed: failed to read %s: %v", path, err)
-			continue
-		}
-		m, missing, err := validateManifest(data)
-		if err != nil || len(missing) > 0 {
-			log.Printf("seed: %s failed validation: %v %v", path, err, missing)
-			continue
-		}
-		tenant, _ := m["tenantId"].(string)
-		env, _ := m["env"].(string)
-		if tenant == "" || env == "" {
-			continue
-		}
-		existing, _ := listVersions(tenant, env)
-		if len(existing) > 0 {
-			log.Printf("seed: %s/%s already has versions, skipping", tenant, env)
-			continue
-		}
-		if err := writeVersion(tenant, env, 1, data); err != nil {
-			log.Printf("seed: failed to write version for %s/%s: %v", tenant, env, err)
-			continue
-		}
-		if err := writePointers(tenant, env, Pointers{Stable: 1, Candidate: 1}); err != nil {
-			log.Printf("seed: failed to write pointers for %s/%s: %v", tenant, env, err)
-			continue
-		}
-		log.Printf("seed: published %s/%s v1 (stable+candidate)", tenant, env)
-	}
+		h.ServeHTTP(w, r)
+	})
 }
 
 func main() {
-	seedFromDisk()
+	initEnvironments()
+	if err := initStore(); err != nil {
+		log.Fatalf("S3 store unavailable: %v", err)
+	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("POST /manifests/{tenant}/{env}/publish", publishHandler)
+	mux.HandleFunc("POST /events", eventsHandler)
+	mux.HandleFunc("GET /events", listEventsHandler)
+	mux.HandleFunc("GET /tenants", listTenantsHandler)
+
+	// tenant level: versions are shared by all environments
+	mux.HandleFunc("GET /manifests/{tenant}/versions", listVersionsHandler)
+	mux.HandleFunc("GET /manifests/{tenant}/versions/{n}", getVersionHandler)
+	mux.HandleFunc("GET /manifests/{tenant}/diff", diffHandler)
+	mux.HandleFunc("POST /manifests/{tenant}/promote", promoteAcrossHandler)
+
+	// environment level: one pointer each
 	mux.HandleFunc("POST /manifests/{tenant}/{env}/promote", promoteHandler)
+	mux.HandleFunc("POST /manifests/{tenant}/{env}/canary", canaryHandler)
 	mux.HandleFunc("POST /manifests/{tenant}/{env}/rollback", rollbackHandler)
-	mux.HandleFunc("GET /manifests/{tenant}/{env}/versions", listVersionsHandler)
-	mux.HandleFunc("GET /manifests/{tenant}/{env}/diff", diffHandler)
 	mux.HandleFunc("GET /manifests/{tenant}/{env}/{slot}", getManifestHandler)
+
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		w.Write([]byte("ok"))
 	})
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8091"
-	}
-	log.Printf("wrcs listening on :%s", port)
-	log.Fatal(http.ListenAndServe(":"+port, mux))
+	port := envOr("PORT", "8091")
+	log.Printf("wrcs listening on :%s (bucket %s, environments %v)", port, bucket, environments)
+	log.Fatal(http.ListenAndServe(":"+port, withCORS(mux)))
 }

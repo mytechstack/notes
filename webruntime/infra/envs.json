@@ -1,0 +1,7 @@
+{
+  "dev":  { "label": "DEV",  "cdaasBase": "http://localhost:8092", "dataBase": "http://cdaas-mock:80" },
+  "sit":  { "label": "SIT",  "cdaasBase": "http://localhost:8092", "dataBase": "http://cdaas-mock:80" },
+  "perf": { "label": "PERF", "cdaasBase": "http://localhost:8092", "dataBase": "http://cdaas-mock:80" },
+  "uat":  { "label": "UAT",  "cdaasBase": "http://localhost:8092", "dataBase": "http://cdaas-mock:80" },
+  "prod": { "label": "PROD", "cdaasBase": "http://localhost:8092", "dataBase": "http://cdaas-mock:80" }
+}

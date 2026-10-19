@@ -1,0 +1,15 @@
+{
+  "moneyIn": { "amount": 84200.00, "period": "This month", "trendPct": 18 },
+  "moneyOut": { "amount": 51800.00, "period": "This month", "trendPct": -6 },
+  "accounts": [
+    { "name": "Operating Account", "balance": 312400.18 },
+    { "name": "Treasury / Savings", "balance": 950000.00 }
+  ],
+  "transactions": [
+    { "date": "Oct 16", "merchant": "AWS", "category": "Infra", "amount": -4200.11 },
+    { "date": "Oct 15", "merchant": "Gusto Payroll", "category": "Payroll", "amount": -38500.00 },
+    { "date": "Oct 14", "merchant": "Acme Corp (client)", "category": "Revenue", "amount": 25000.00 },
+    { "date": "Oct 12", "merchant": "Stripe", "category": "Fees", "amount": -312.40 }
+  ],
+  "burnRate": { "spent": 51800, "budget": 70000 }
+}

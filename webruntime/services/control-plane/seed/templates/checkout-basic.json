@@ -1,0 +1,12 @@
+{
+  "description": "Retail checkout: a single overview page",
+  "pages": [
+    {
+      "id": "overview",
+      "label": "Overview",
+      "icon": "home",
+      "default": true,
+      "module": "overview"
+    }
+  ]
+}

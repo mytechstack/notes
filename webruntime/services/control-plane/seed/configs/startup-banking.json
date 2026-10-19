@@ -1,0 +1,91 @@
+{
+  "tenantId": "startup-banking",
+  "displayName": "Startup Banking",
+  "runtimeVersion": "1.7.0",
+  "roles": [
+    "finance-user"
+  ],
+  "pages": [
+    {
+      "id": "home",
+      "label": "Home",
+      "icon": "home",
+      "default": true,
+      "module": "home",
+      "moduleVersion": "1.0.0"
+    },
+    {
+      "id": "accounts",
+      "label": "Accounts",
+      "icon": "bank",
+      "default": false,
+      "module": "accounts",
+      "moduleVersion": "1.0.0"
+    },
+    {
+      "id": "transactions",
+      "label": "Transactions",
+      "icon": "list",
+      "default": false,
+      "module": "transactions",
+      "moduleVersion": "1.0.0"
+    },
+    {
+      "id": "transfers",
+      "label": "Transfers",
+      "icon": "arrows",
+      "default": false,
+      "module": "transfers",
+      "moduleVersion": "1.0.0"
+    },
+    {
+      "id": "settings",
+      "label": "Settings",
+      "icon": "gear",
+      "default": false,
+      "module": "settings",
+      "moduleVersion": "1.0.0"
+    }
+  ],
+  "frame": {
+    "theme": {
+      "primary": "#1a1a2e",
+      "headerBg": "#1a1a2e"
+    },
+    "header": {
+      "module": "frame-header",
+      "settings": {
+        "title": "Startup Banking",
+        "logoUrl": "",
+        "showUser": true
+      }
+    },
+    "nav": {
+      "module": "frame-nav",
+      "settings": {
+        "position": "left",
+        "showIcons": true
+      }
+    },
+    "footer": {
+      "module": "frame-footer",
+      "settings": {
+        "text": "© 2026 Startup Banking. Deposits held at partner banks.",
+        "links": [
+          {
+            "label": "Privacy",
+            "url": "https://example.com/privacy"
+          },
+          {
+            "label": "Terms",
+            "url": "https://example.com/terms"
+          },
+          {
+            "label": "Support",
+            "url": "https://example.com/support"
+          }
+        ]
+      }
+    }
+  }
+}

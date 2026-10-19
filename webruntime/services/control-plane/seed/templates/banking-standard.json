@@ -1,0 +1,40 @@
+{
+  "description": "Startup banking: dashboard, accounts, transactions, transfers, settings",
+  "pages": [
+    {
+      "id": "home",
+      "label": "Home",
+      "icon": "home",
+      "default": true,
+      "module": "home"
+    },
+    {
+      "id": "accounts",
+      "label": "Accounts",
+      "icon": "bank",
+      "default": false,
+      "module": "accounts"
+    },
+    {
+      "id": "transactions",
+      "label": "Transactions",
+      "icon": "list",
+      "default": false,
+      "module": "transactions"
+    },
+    {
+      "id": "transfers",
+      "label": "Transfers",
+      "icon": "arrows",
+      "default": false,
+      "module": "transfers"
+    },
+    {
+      "id": "settings",
+      "label": "Settings",
+      "icon": "gear",
+      "default": false,
+      "module": "settings"
+    }
+  ]
+}

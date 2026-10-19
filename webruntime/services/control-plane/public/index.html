@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Control Plane · Web Runtime</title>
+<link rel="stylesheet" href="/style.css?v=6">
+</head>
+<body>
+<header class="cp-header">
+  <span class="cp-logo">Control Plane</span>
+  <div class="cp-header-right">
+    <label class="cp-tenant">Tenant <select id="tenant-select"></select></label>
+    <button id="new-tenant-btn" class="cp-header-btn">+ New tenant</button>
+  </div>
+</header>
+
+<main class="cp-main">
+  <!-- NEW TENANT (hidden until "+ New tenant") -->
+  <section id="new-tenant-card" class="cp-card cp-card-accent" hidden>
+    <div class="cp-card-head"><h2>New tenant</h2></div>
+    <p class="cp-muted cp-small">Creates the tenant's config from a template and builds v1. It goes live in
+      <strong>dev only</strong>; every other environment gets it through promotion.</p>
+    <div class="cp-fields">
+      <label>Tenant id <input id="nt-id" placeholder="acme-bank"></label>
+      <label>Display name <input id="nt-name" placeholder="Acme Bank"></label>
+      <label>Template <select id="nt-template"></select></label>
+      <label>Required role <input id="nt-role" placeholder="acme-bank-user"></label>
+    </div>
+    <p id="nt-template-desc" class="cp-muted cp-small"></p>
+    <div class="cp-row">
+      <span class="cp-spacer"></span>
+      <button id="nt-cancel">Cancel</button>
+      <button id="nt-create" class="cp-primary">Create tenant</button>
+    </div>
+    <div id="nt-status" class="cp-status"></div>
+  </section>
+
+  <!-- 1. CONFIGURE (DE Console: config lives in its own database) -->
+  <section class="cp-card">
+    <div class="cp-card-head">
+      <h2>1 · Configure</h2>
+      <span id="config-revision" class="cp-pill"></span>
+    </div>
+    <table class="cp-table">
+      <thead><tr><th>Default</th><th>Page label</th><th>Module</th><th>Version</th><th></th></tr></thead>
+      <tbody id="pages-body"></tbody>
+    </table>
+    <div class="cp-row">
+      <button id="add-page">+ Add page</button>
+      <label class="cp-inline">Roles <input id="f-roles" placeholder="finance-user"></label>
+    </div>
+    <div class="cp-row">
+      <span class="cp-spacer"></span>
+      <button id="reset-config">Discard</button>
+      <button id="save-config" class="cp-primary">Save &amp; publish</button>
+    </div>
+    <div id="config-status" class="cp-status"></div>
+  </section>
+
+  <!-- 2. EXPERIENCE FRAME (part of the same config; saved by Save & publish above) -->
+  <section class="cp-card">
+    <div class="cp-card-head">
+      <h2>2 · Experience frame</h2>
+      <span class="cp-muted cp-small">Header, navigation and footer around every page. Saved with <strong>Save &amp; publish</strong>.</span>
+    </div>
+    <div class="cp-row cp-theme">
+      <span class="cp-label">Theme</span>
+      <label class="cp-inline">Accent <input type="color" id="ft-primary"></label>
+      <label class="cp-inline">Header <input type="color" id="ft-headerbg"></label>
+    </div>
+    <div id="frame-slots" class="cp-frame-slots"></div>
+  </section>
+
+  <!-- 2. RELEASE (WCR: one immutable version, promoted through environments) -->
+  <section class="cp-card">
+    <div class="cp-card-head">
+      <h2>3 · Release</h2>
+      <span class="cp-muted cp-small">Each version is built once and promoted dev → prod unchanged. Click an environment.</span>
+    </div>
+    <div id="pipeline" class="cp-pipeline"></div>
+
+    <h3 id="env-title"></h3>
+    <div class="cp-tiles">
+      <div class="cp-tile cp-tile-stable"><span>Stable</span><strong id="t-stable">—</strong></div>
+      <div class="cp-tile cp-tile-candidate"><span>Candidate</span><strong id="t-candidate">—</strong></div>
+      <div class="cp-tile cp-tile-canary"><span>Canary</span><strong id="t-canary">off</strong></div>
+    </div>
+    <div class="cp-row">
+      <span class="cp-label">Canary</span>
+      <div id="canary-buttons" class="cp-seg"></div>
+      <span class="cp-spacer"></span>
+      <button id="promote-btn" class="cp-primary">Promote candidate → stable</button>
+    </div>
+    <div class="cp-row">
+      <a id="open-stable" class="cp-btn-link" target="_blank" rel="noopener">Open stable ↗</a>
+      <a id="open-candidate" class="cp-btn-link" target="_blank" rel="noopener">Preview candidate ↗</a>
+      <span class="cp-spacer"></span>
+      <span id="promote-next-reason" class="cp-muted cp-small"></span>
+      <button id="promote-next-btn" class="cp-next"></button>
+    </div>
+    <div id="release-status" class="cp-status"></div>
+
+    <h3>Versions</h3>
+    <table class="cp-table">
+      <thead><tr><th>Version</th><th>From config</th><th>Has been stable in</th><th>In this env</th><th></th></tr></thead>
+      <tbody id="versions-body"></tbody>
+    </table>
+    <details>
+      <summary>Pointer file in S3 <code id="pointer-key"></code></summary>
+      <pre id="pointer-view" class="cp-pre"></pre>
+    </details>
+    <pre id="manifest-view" class="cp-pre" hidden></pre>
+  </section>
+
+  <!-- 3. WHO SEES WHAT (decided per user by the Web Runtime Service) -->
+  <section class="cp-card">
+    <div class="cp-card-head">
+      <h2>4 · Who sees what <span id="grid-env" class="cp-muted"></span></h2>
+      <span id="grid-legend" class="cp-legend"></span>
+    </div>
+    <p class="cp-muted cp-small">100 simulated users. Each user always lands in the same bucket (0–99), so raising
+      the canary % only adds users. Click a square to open the app as that user.</p>
+    <div id="user-grid" class="cp-grid"></div>
+    <div class="cp-row">
+      <input id="lookup-user" placeholder="any user id, e.g. alice">
+      <button id="lookup-btn">Check</button>
+      <span id="lookup-result" class="cp-small"></span>
+    </div>
+  </section>
+</main>
+
+<script src="/app.js?v=6"></script>
+</body>
+</html>

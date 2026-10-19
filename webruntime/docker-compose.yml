@@ -1,21 +1,59 @@
 services:
+  # S3 stand-in (SeaweedFS, S3-compatible API). Bucket web-manifests holds
+  # immutable manifest versions and one pointer object per tenant/env.
+  # infra/s3/s3.json: anonymous = read-only, WCR's key = read/write.
+  s3:
+    image: chrislusf/seaweedfs:4.48
+    command: server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -ip.bind=0.0.0.0 -master.volumeSizeLimitMB=64
+    ports:
+      - "9000:8333"
+    volumes:
+      - s3-data:/data
+      - ./infra/s3/s3.json:/etc/seaweedfs/s3.json:ro
+    healthcheck:
+      test: ["CMD", "curl", "-s", "-o", "/dev/null", "http://localhost:8333/"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  # Web Composition Registry: generates + versions manifests into S3, owns
+  # the pointer (stable / candidate / canary). Not on the request path.
   wrcs:
     build: ./services/wrcs
     ports:
       - "8091:8091"
     environment:
       - PORT=8091
-      - DATA_DIR=/data
-      - SEED_DIR=/seed
+      - ENVIRONMENTS=dev,sit,perf,uat,prod
+      - S3_ENDPOINT=s3:8333
+      - S3_BUCKET=web-manifests
+      - S3_ACCESS_KEY=wcr-access-key
+      - S3_SECRET_KEY=wcr-secret-key
+      - CONTROL_PLANE_URL=http://control-plane:8093
       - WEBHOOK_URLS=http://web-runtime-service:8080/internal/cache-invalidate
-    volumes:
-      - wrcs-data:/data
-      - ./manifests:/seed:ro
+    depends_on:
+      s3:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8091/healthz"]
-      interval: 5s
+      interval: 3s
       timeout: 3s
-      retries: 5
+      retries: 20
+
+  control-plane:
+    build: ./services/control-plane
+    ports:
+      - "8093:8093"
+    environment:
+      - PORT=8093
+      - DATA_DIR=/data
+      - SEED_DIR=/app/seed
+      - WRCS_EVENTS_URL=http://wrcs:8091/events
+    volumes:
+      - control-plane-data:/data
+    depends_on:
+      wrcs:
+        condition: service_healthy
 
   oidc-shell:
     build: ./services/oidc-shell
@@ -25,7 +63,11 @@ services:
       - PORT=8081
       - JWT_SECRET=demo-secret-change-me
       - WRS_PUBLIC_URL=http://localhost:8080
+      - CONTROL_PLANE_URL=http://control-plane:8093   # tenant list for the login page
+      - ENVIRONMENTS=dev,sit,perf,uat,prod
 
+  # Reads pointers + manifests straight from S3 (anonymous read, like a CDN)
+  # and binds the environment-agnostic manifest to ?env='s hosts.
   web-runtime-service:
     build: ./services/web-runtime-service
     ports:
@@ -33,7 +75,11 @@ services:
     environment:
       - PORT=8080
       - JWT_SECRET=demo-secret-change-me
-      - WRCS_BASE_URL=http://wrcs:8091
+      - MANIFEST_BASE_URL=http://s3:8333/web-manifests
+      - ENV_BINDINGS=/etc/web-runtime/envs.json
+      - DEFAULT_ENV=prod
+    volumes:
+      - ./infra/envs.json:/etc/web-runtime/envs.json:ro
     depends_on:
       wrcs:
         condition: service_healthy
@@ -44,4 +90,5 @@ services:
       - "8092:80"
 
 volumes:
-  wrcs-data:
+  s3-data:
+  control-plane-data:

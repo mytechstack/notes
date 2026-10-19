@@ -2,25 +2,51 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>{{.Tenant}} · Web Runtime</title>
+<title>{{.Frame.Title}} · Web Runtime</title>
 <link rel="stylesheet" href="/static/runtime.css">
+{{if .PreconnectOrigin}}<link rel="preconnect" href="{{.PreconnectOrigin}}">{{end}}
+{{range .Frame.Remotes}}<link rel="modulepreload" href="{{.}}">
+{{end}}{{if .ActiveRemote}}<link rel="modulepreload" href="{{.ActiveRemote}}">{{end}}
 </head>
-<body>
-<header class="wr-header">
-  <span class="wr-logo">Web Runtime</span>
+<!--
+  Experience frame: header, navigation and footer are frame modules named in
+  the manifest (shell.frame) and mounted by runtime.js into the three slots
+  below. Each slot is first rendered here on the server as a plain fallback,
+  so the page is usable before — or without — the frame modules. The nav
+  position and theme colors are applied here too, so nothing jumps when the
+  modules load.
+-->
+<body class="wr-nav-{{.Frame.NavPosition}}" style="{{.Frame.ThemeStyle}}">
+<header id="frame-header" class="wr-header">
+  <span class="wr-logo">{{.Frame.Title}}</span>
   <span id="slot-badge" class="wr-badge"></span>
 </header>
-<nav id="app-nav" class="wr-nav"></nav>
-<main id="experience-root" class="wr-main"></main>
+<div class="wr-layout">
+  <nav id="app-nav" class="wr-nav">{{range .Nav}}<a href="#{{.Path}}" data-id="{{.ID}}" class="{{if eq .ID $.ActiveID}}active{{end}}">{{.Label}}</a>{{end}}</nav>
+  <main id="experience-root" class="wr-main"></main>
+</div>
+{{if .Frame.HasFooter}}<footer id="frame-footer" class="wr-footer">
+  <span>{{.Frame.FooterText}}</span>
+  {{range .Frame.FooterLinks}}<a href="{{.URL}}" rel="noopener" target="_blank">{{.Label}}</a>{{end}}
+</footer>{{end}}
 
 <!--
   __PLATFORM_STATE__ is injected server-side by the Web Runtime Service
   (RFC goal G2: "server renders index.html with all boot data injected;
   zero extra round trips before render"). The browser Web Runtime shell
   (/static/runtime.js) reads this directly — no API call needed to know
-  the nav, the manifest, or the caller's identity.
+  the frame, the nav, the manifest, or the caller's identity.
 -->
 <script>window.__PLATFORM_STATE__ = {{.StateJSON}};</script>
+{{if .ExperienceDataJSON}}
+<!--
+  __EXPERIENCE_DATA__: the active experience's own backing data, fetched
+  server-side (see ssrdata.go) so the experience module can render
+  immediately with mount() instead of fetching it itself and showing a
+  spinner first.
+-->
+<script>window.__EXPERIENCE_DATA__ = {{.ExperienceDataJSON}};</script>
+{{end}}
 <script type="module" src="/static/runtime.js"></script>
 </body>
 </html>

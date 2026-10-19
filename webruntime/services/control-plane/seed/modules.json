@@ -1,0 +1,162 @@
+{
+  "overview": {
+    "kind": "experience",
+    "scope": "overview",
+    "latest": "3.1.2",
+    "versions": {
+      "3.1.2": {
+        "path": "/overview/App.js",
+        "deployedAt": "2026-09-20T01:00:00Z"
+      }
+    }
+  },
+  "home": {
+    "kind": "experience",
+    "scope": "home",
+    "latest": "1.1.0",
+    "versions": {
+      "1.0.0": {
+        "path": "/home/App.js",
+        "deployedAt": "2026-10-17T01:00:00Z",
+        "dataPath": "/home/data.json"
+      },
+      "1.1.0": {
+        "path": "/home/1.1.0/App.js",
+        "deployedAt": "2026-10-18T09:00:00Z",
+        "dataPath": "/home/data.json"
+      }
+    }
+  },
+  "accounts": {
+    "kind": "experience",
+    "scope": "accounts",
+    "latest": "1.0.0",
+    "versions": {
+      "1.0.0": {
+        "path": "/accounts/App.js",
+        "deployedAt": "2026-10-17T01:00:00Z"
+      }
+    }
+  },
+  "transactions": {
+    "kind": "experience",
+    "scope": "transactions",
+    "latest": "1.0.0",
+    "versions": {
+      "1.0.0": {
+        "path": "/transactions/App.js",
+        "deployedAt": "2026-10-17T01:00:00Z"
+      }
+    }
+  },
+  "transfers": {
+    "kind": "experience",
+    "scope": "transfers",
+    "latest": "1.0.0",
+    "versions": {
+      "1.0.0": {
+        "path": "/transfers/App.js",
+        "deployedAt": "2026-10-17T01:00:00Z"
+      }
+    }
+  },
+  "settings": {
+    "kind": "experience",
+    "scope": "settings",
+    "latest": "1.0.0",
+    "versions": {
+      "1.0.0": {
+        "path": "/settings/App.js",
+        "deployedAt": "2026-10-17T01:00:00Z"
+      }
+    }
+  },
+  "frame-header": {
+    "kind": "frame",
+    "slot": "header",
+    "scope": "frame-header",
+    "latest": "1.0.0",
+    "settings": [
+      {
+        "key": "title",
+        "label": "Title",
+        "type": "text",
+        "default": ""
+      },
+      {
+        "key": "logoUrl",
+        "label": "Logo URL",
+        "type": "url",
+        "default": ""
+      },
+      {
+        "key": "showUser",
+        "label": "Show user and version",
+        "type": "bool",
+        "default": true
+      }
+    ],
+    "versions": {
+      "1.0.0": {
+        "path": "/frame/header/1.0.0/App.js",
+        "deployedAt": "2026-10-18T10:00:00Z"
+      }
+    }
+  },
+  "frame-nav": {
+    "kind": "frame",
+    "slot": "nav",
+    "scope": "frame-nav",
+    "latest": "1.0.0",
+    "settings": [
+      {
+        "key": "position",
+        "label": "Position",
+        "type": "select",
+        "options": [
+          "left",
+          "top"
+        ],
+        "default": "left"
+      },
+      {
+        "key": "showIcons",
+        "label": "Show icons",
+        "type": "bool",
+        "default": true
+      }
+    ],
+    "versions": {
+      "1.0.0": {
+        "path": "/frame/nav/1.0.0/App.js",
+        "deployedAt": "2026-10-18T10:00:00Z"
+      }
+    }
+  },
+  "frame-footer": {
+    "kind": "frame",
+    "slot": "footer",
+    "scope": "frame-footer",
+    "latest": "1.0.0",
+    "settings": [
+      {
+        "key": "text",
+        "label": "Footer text",
+        "type": "text",
+        "default": ""
+      },
+      {
+        "key": "links",
+        "label": "Links",
+        "type": "links",
+        "default": []
+      }
+    ],
+    "versions": {
+      "1.0.0": {
+        "path": "/frame/footer/1.0.0/App.js",
+        "deployedAt": "2026-10-18T10:00:00Z"
+      }
+    }
+  }
+}
