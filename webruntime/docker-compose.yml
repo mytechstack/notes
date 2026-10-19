@@ -1,17 +1,21 @@
 services:
-  # S3 stand-in (SeaweedFS, S3-compatible API). Bucket web-manifests holds
+  # S3 stand-in (MinIO, S3-compatible API). Bucket web-manifests holds
   # immutable manifest versions and one pointer object per tenant/env.
-  # infra/s3/s3.json: anonymous = read-only, WCR's key = read/write.
+  # WCR's key is MinIO's root user; WCR creates the bucket and gives it an
+  # anonymous read-only policy on start-up. Official MinIO images are not
+  # pullable, so this pins Bitnami's frozen legacy build.
   s3:
-    image: chrislusf/seaweedfs:4.48
-    command: server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -ip.bind=0.0.0.0 -master.volumeSizeLimitMB=64
+    image: bitnamilegacy/minio:2025.4.22
+    environment:
+      - MINIO_ROOT_USER=wcr-access-key
+      - MINIO_ROOT_PASSWORD=wcr-secret-key
     ports:
-      - "9000:8333"
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # MinIO console
     volumes:
-      - s3-data:/data
-      - ./infra/s3/s3.json:/etc/seaweedfs/s3.json:ro
+      - minio-data:/bitnami/minio/data
     healthcheck:
-      test: ["CMD", "curl", "-s", "-o", "/dev/null", "http://localhost:8333/"]
+      test: ["CMD", "curl", "-sf", "http://localhost:9000/minio/health/live"]
       interval: 3s
       timeout: 3s
       retries: 30
@@ -25,7 +29,7 @@ services:
     environment:
       - PORT=8091
       - ENVIRONMENTS=dev,sit,perf,uat,prod
-      - S3_ENDPOINT=s3:8333
+      - S3_ENDPOINT=s3:9000
       - S3_BUCKET=web-manifests
       - S3_ACCESS_KEY=wcr-access-key
       - S3_SECRET_KEY=wcr-secret-key
@@ -75,7 +79,7 @@ services:
     environment:
       - PORT=8080
       - JWT_SECRET=demo-secret-change-me
-      - MANIFEST_BASE_URL=http://s3:8333/web-manifests
+      - MANIFEST_BASE_URL=http://s3:9000/web-manifests
       - ENV_BINDINGS=/etc/web-runtime/envs.json
       - DEFAULT_ENV=prod
     volumes:
@@ -90,5 +94,5 @@ services:
       - "8092:80"
 
 volumes:
-  s3-data:
+  minio-data:
   control-plane-data:

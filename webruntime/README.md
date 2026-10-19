@@ -26,7 +26,7 @@ The whole loop as a script: `./scripts/demo.sh` (requires `curl`, `jq`).
 |---|---|---|
 | `control-plane` | 8093 | DE Console stand-in: owns tenant **config** (one per tenant, not per environment) in its own database, and the module catalog. Emits `config.changed` to WCR. Serves the UI. |
 | `wrcs` (WCR) | 8091 | Web Composition Registry: generates ONE environment-agnostic manifest per config revision, stores it in S3 as an **immutable version**, owns each environment's **pointer** (stable / candidate / canary) and the **promotion gates** between environments. Not on the request path. |
-| `s3` | 9000 | S3-compatible storage (SeaweedFS). Bucket `web-manifests`; anonymous read-only, WCR's key read/write (`infra/s3/s3.json`). |
+| `s3` | 9000 (console 9001) | S3-compatible storage (MinIO, `bitnamilegacy/minio:2025.4.22`). Bucket `web-manifests`, created by WCR with an anonymous read-only policy; WCR's key is MinIO's root user. |
 | `web-runtime-service` | 8080 | Go BFF: validates JWT, reads the environment's pointer + manifest **directly from S3**, binds the manifest to that environment's hosts (`infra/envs.json`), picks a version per user, OPA access check, renders `index.html` + `__PLATFORM_STATE__`. |
 | `oidc-shell` | 8081 | Mints a demo JWT (any user id) and redirects to the Web Runtime Service. Its login page lists every tenant from the control plane with one-click links per environment. Auth only (RFC goal G4). |
 | `cdaas-mock` | 8092 | Serves the experience JS modules the browser lazy-loads. |

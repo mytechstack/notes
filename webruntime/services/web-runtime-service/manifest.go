@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// Reads manifests straight from S3 (SeaweedFS locally) — WCR is not on the
+// Reads manifests straight from S3 (MinIO locally) — WCR is not on the
 // request path. Two kinds of object:
 //
 //   pointers/{tenant}/{env}.json   small, mutable: refreshed every few

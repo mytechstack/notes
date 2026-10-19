@@ -18,7 +18,7 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-// Versioned manifest storage in S3 (SeaweedFS locally; any S3 API works).
+// Versioned manifest storage in S3 (MinIO locally; any S3 API works).
 //
 //   manifests/{tenant}/v{n}.json     immutable, environment-agnostic: built once,
 //                                    promoted dev → … → prod unchanged
@@ -94,8 +94,7 @@ func ensureBucket() error {
 	}
 	// Readers (Web Runtime Service, CDN) need anonymous GetObject. Stores
 	// that don't implement bucket policies grant it through their own
-	// access config instead (see infra/s3/s3.json), so a failure here is
-	// logged, not fatal.
+	// access config instead, so a failure here is logged, not fatal.
 	policy := fmt.Sprintf(`{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":["*"]},`+
 		`"Action":["s3:GetObject"],"Resource":["arn:aws:s3:::%s/*"]}]}`, bucket)
 	if err := s3c.SetBucketPolicy(ctx, bucket, policy); err != nil {

@@ -135,4 +135,4 @@ TOKEN=$(curl -s -D - -o /dev/null "$OIDC/login?tenant=$TENANT&role=wrong-role&us
 curl -s -o /dev/null -w "  http_status=%{http_code}\n" "$WRS/?token=$TOKEN&env=prod"
 
 echo
-echo "Done. Control plane UI: $CP   S3 (SeaweedFS): $S3"
+echo "Done. Control plane UI: $CP   S3 (MinIO): $S3"
